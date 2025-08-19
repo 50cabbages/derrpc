@@ -9,6 +9,7 @@ const { createClient } = require('@supabase/supabase-js');
 
 // Import the auth router
 const authRouter = require('./routes/auth'); 
+const profileRouter = require('./routes/profile'); 
 
 const supabaseUrl = process.env.SUPABASE_URL;
 const supabaseAnonKey = process.env.SUPABASE_ANON_KEY;
@@ -26,12 +27,15 @@ const PORT = process.env.PORT || 3000;
 // --- MIDDLEWARE ---
 app.use(cors());
 app.use(cookieParser()); // Use cookie-parser middleware
+app.use(express.json());
 app.use(express.static(path.join(__dirname, '../public')));
 
 // --- API ROUTES ---
 
 // Mount the authentication router under the /api/auth path
 app.use('/api/auth', authRouter(supabase));
+app.use('/api/profile', profileRouter(supabase));
+
 
 // Endpoint to provide public Supabase keys to the frontend
 app.get('/api/config', (req, res) => {

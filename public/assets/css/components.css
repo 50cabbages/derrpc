@@ -415,3 +415,97 @@
 .checkout-btn {
     width: 100%;
 }
+
+/* --- FORM STYLES --- */
+.form-group {
+    display: flex;
+    flex-direction: column;
+}
+
+.form-group label {
+    margin-bottom: 0.5rem;
+    font-size: 0.9rem;
+    color: var(--text-secondary);
+}
+
+.form-input {
+    background-color: var(--dark-bg);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    padding: 12px;
+    color: var(--text-primary);
+    font-size: 1rem;
+}
+.form-input:focus {
+    outline: none;
+    border-color: var(--primary-blue);
+}
+
+.form-section-title {
+    margin-top: 1rem;
+    border-bottom: 1px solid var(--border-color);
+    padding-bottom: 0.5rem;
+}
+
+.form-actions {
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    gap: 1rem;
+    margin-top: 1rem;
+}
+
+.form-feedback {
+    flex-grow: 1;
+    font-size: 0.9rem;
+    transition: opacity 0.3s ease;
+}
+.form-feedback.success { color: #4ade80; }
+.form-feedback.error { color: #f87171; }
+
+.profile-link {
+    font-size: 0.9rem;
+    color: var(--text-secondary);
+    text-decoration: underline;
+}
+.profile-link:hover {
+    color: var(--text-primary);
+}
+
+.profile-data-value {
+    font-size: 1rem;
+    color: var(--text-primary);
+    padding: 12px;
+    min-height: 20px; /* Ensures space is reserved even when empty */
+    border: 1px solid transparent; /* Aligns with input box height */
+}
+
+/* --- VIEW MODE --- */
+.profile-form.view-mode .form-input {
+    display: none;
+}
+.profile-form.view-mode .profile-data-value {
+    display: block;
+}
+.profile-form.view-mode #save-btn,
+.profile-form.view-mode #cancel-btn {
+    display: none;
+}
+.profile-form.view-mode #edit-btn {
+    display: inline-block;
+}
+
+/* --- EDIT MODE --- */
+.profile-form.edit-mode .form-input {
+    display: block;
+}
+.profile-form.edit-mode .profile-data-value {
+    display: none;
+}
+.profile-form.edit-mode #save-btn,
+.profile-form.edit-mode #cancel-btn {
+    display: inline-block;
+}
+.profile-form.edit-mode #edit-btn {
+    display: none;
+}
