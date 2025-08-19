@@ -1,0 +1,119 @@
+/* --- MARQUEE ANIMATIONS --- */
+@keyframes marquee-ltr {
+    from { transform: translateX(-50%); }
+    to { transform: translateX(0); }
+}
+
+@keyframes marquee-rtl {
+    from { transform: translateX(0); }
+    to { transform: translateX(-50%); }
+}
+
+/* --- CATEGORY MARQUEE (Left-to-Right) --- */
+.category-grid {
+    display: flex;
+    overflow: hidden;
+    -webkit-mask-image: linear-gradient(to right, transparent, black 10%, black 90%, transparent);
+    mask-image: linear-gradient(to right, transparent, black 10%, black 90%, transparent);
+}
+
+.category-list {
+    display: flex;
+    flex-shrink: 0;
+    gap: 1.5rem;
+    animation: marquee-ltr 40s linear infinite;
+}
+
+.category-grid:hover .category-list {
+    animation-play-state: paused;
+}
+
+.category-card {
+    background-color: var(--dark-bg);
+    padding: 2rem 1rem;
+    border-radius: 12px;
+    border: 1px solid var(--border-color);
+    transition: transform 0.3s ease, border-color 0.3s ease;
+    flex: 0 0 160px;
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+
+.category-card:hover {
+    transform: translateY(-5px);
+    border-color: var(--primary-blue);
+}
+
+.category-card .icon-container {
+    height: 60px; /* Fixed height for icon container */
+    width: 60px;
+    margin-bottom: 1rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.category-card .icon-container img {
+    max-width: 100%;
+    max-height: 100%;
+    object-fit: contain;
+}
+
+.category-card h3 {
+    font-size: 1.1rem;
+    color: var(--text-primary);
+}
+
+/* --- BRAND MARQUEE (Right-to-Left) --- */
+.brand-grid {
+    display: flex;
+    overflow: hidden;
+    -webkit-mask-image: linear-gradient(to right, transparent, black 20%, black 80%, transparent);
+    mask-image: linear-gradient(to right, transparent, black 20%, black 80%, transparent);
+}
+
+.brand-logos {
+    display: flex;
+    flex-shrink: 0;
+    justify-content: space-around;
+    min-width: 100%;
+    gap: 4rem;
+    animation: marquee-rtl 30s linear infinite;
+}
+
+.brand-grid:hover .brand-logos {
+    animation-play-state: paused;
+}
+
+.brand-card {
+    background-color: var(--dark-bg);
+    padding: 2rem 1rem;
+    border-radius: 12px;
+    border: 1px solid var(--border-color);
+    transition: transform 0.3s ease, border-color 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex: 0 0 200px;
+    height: 120px;
+}
+
+.brand-card:hover {
+    transform: translateY(-5px);
+    border-color: var(--primary-blue);
+}
+
+.brand-card img {
+    max-width: 100%;
+    max-height: 100%;
+    object-fit: contain;
+    filter: grayscale(80%) contrast(120%);
+    transition: filter 0.3s ease;
+}
+
+.brand-card:hover img {
+    filter: none;
+}

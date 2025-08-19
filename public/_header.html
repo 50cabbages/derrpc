@@ -1,0 +1,34 @@
+<header class="main-header">
+    <div class="container">
+        <a href="/" class="header-logo">
+            DRE Computers
+        </a>
+        <nav class="main-nav">
+            <ul>
+                <li><a href="/">Home</a></li>
+                <li><a href="products.html">Products</a></li>
+                <li><a href="#">About</a></li>
+                <li><a href="#">Contact</a></li>
+            </ul>
+        </nav>
+        <div class="header-actions">
+            <button class="action-btn" id="search-btn">🔍</button>
+            <button class="action-btn" id="cart-btn">
+    🛒
+    <span id="cart-count-badge">0</span>
+</button>
+            
+            <div id="auth-container">
+                <!-- Logged-out state -->
+                <a href="/api/auth/google" class="btn btn-outline" id="login-btn">Login with Google</a>
+                
+                <!-- Logged-in state (hidden by default) -->
+                <div id="user-info" class="user-info hidden">
+                    <!-- Changed ID from user-email to user-display-name for clarity -->
+                    <span id="user-display-name"></span>
+                    <button id="logout-btn" class="btn-logout">Logout</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</header>

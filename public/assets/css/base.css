@@ -1,0 +1,45 @@
+/* --- CSS VARIABLES & GLOBAL STYLES --- */
+:root {
+    --dark-bg: #0a0f18;
+    --primary-blue: #3a7bfd;
+    --light-blue: #1e3a8a;
+    --card-bg: #111827;
+    --text-primary: #ffffff;
+    --text-secondary: #9ca3af;
+    --border-color: #374151;
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Inter', sans-serif;
+    background-color: var(--dark-bg);
+    color: var(--text-primary);
+    line-height: 1.6;
+}
+
+.container {
+    width: 90%;
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+a {
+    color: var(--primary-blue);
+    text-decoration: none;
+    transition: color 0.3s ease;
+}
+
+a:hover {
+    color: var(--text-primary);
+}
+
+.section-title {
+    text-align: center;
+    font-size: 2.5rem;
+    margin-bottom: 3rem;
+}
