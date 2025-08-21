@@ -509,3 +509,91 @@
 .profile-form.edit-mode #edit-btn {
     display: none;
 }
+
+/* --- ORDER HISTORY STYLES --- */
+.order-card {
+    background-color: var(--dark-bg);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    margin-bottom: 1.5rem;
+    padding: 1.5rem;
+}
+
+.order-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.order-header h4 {
+    margin: 0;
+}
+
+.order-status {
+    background-color: var(--primary-blue);
+    color: var(--text-primary);
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 0.8rem;
+    font-weight: 600;
+}
+
+.order-item {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin-bottom: 1rem;
+}
+
+.order-item-image {
+    width: 60px;
+    height: 60px;
+    object-fit: contain;
+    background-color: #000;
+    border-radius: 4px;
+}
+
+.order-item-details {
+    flex-grow: 1;
+}
+
+.order-footer {
+    text-align: right;
+    font-size: 1.1rem;
+    font-weight: 700;
+    margin-top: 1rem;
+    padding-top: 1rem;
+    border-top: 1px solid var(--border-color);
+}
+
+/* --- ADMIN TABLE STYLES --- */
+.admin-table {
+    width: 100%;
+    border-collapse: collapse;
+    text-align: left;
+    color: var(--text-secondary);
+}
+.admin-table th, .admin-table td {
+    padding: 12px 15px;
+    border-bottom: 1px solid var(--border-color);
+}
+.admin-table thead th {
+    background-color: var(--card-bg);
+    color: var(--text-primary);
+    font-weight: 600;
+}
+.admin-table tbody tr:hover {
+    background-color: var(--dark-bg);
+}
+.admin-table .action-btn-group a, .admin-table .action-btn-group button {
+    margin-right: 10px;
+    color: var(--primary-blue);
+    text-decoration: none;
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 1rem;
+}

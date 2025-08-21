@@ -371,6 +371,56 @@ document.addEventListener('DOMContentLoaded', async () => {
             window.location.href = '/';
         }
 
+        const renderOrderHistory = (orders) => {
+    const container = document.getElementById('order-history-container');
+    if (!orders || orders.length === 0) {
+        container.innerHTML = '<p>You have no past orders.</p>';
+        return;
+    }
+
+    container.innerHTML = orders.map(order => `
+        <div class="order-card">
+            <div class="order-header">
+                <div>
+                    <h4>Order #${order.id}</h4>
+                    <p style="color: var(--text-secondary); font-size: 0.9rem;">
+                        Placed on ${new Date(order.created_at).toLocaleDateString()}
+                    </p>
+                </div>
+                <span class="order-status">${order.status}</span>
+            </div>
+            <div class="order-body">
+                ${order.order_items.map(item => `
+                    <div class="order-item">
+                        <img src="${item.products.image || 'https://via.placeholder.com/100x100.png?text=No+Image'}" alt="${item.products.name}" class="order-item-image">
+                        <div class="order-item-details">
+                            <p>${item.products.name}</p>
+                            <p style="font-size: 0.9rem; color: var(--text-secondary);">
+                                ${item.quantity} x ${new Intl.NumberFormat('en-PH', { style: 'currency', currency: 'PHP' }).format(item.price_at_purchase)}
+                            </p>
+                        </div>
+                    </div>
+                `).join('')}
+            </div>
+            <div class="order-footer">
+                Total: ${new Intl.NumberFormat('en-PH', { style: 'currency', currency: 'PHP' }).format(order.total_price)}
+            </div>
+        </div>
+    `).join('');
+};
+
+// Fetch and render the order history
+const orderResponse = await fetch('/api/orders', {
+    headers: { 'Authorization': `Bearer ${accessToken}` }
+});
+
+if (orderResponse.ok) {
+    const orders = await orderResponse.json();
+    renderOrderHistory(orders);
+} else {
+    document.getElementById('order-history-container').innerHTML = '<p>Could not load order history.</p>';
+}
+
         editBtn.addEventListener('click', () => {
             form.classList.remove('view-mode');
             form.classList.add('edit-mode');
@@ -412,5 +462,254 @@ document.addEventListener('DOMContentLoaded', async () => {
             }
             setTimeout(() => { feedbackEl.textContent = '' }, 3000);
         });
+    } else if (path.endsWith('/checkout.html')) {
+    const checkoutContent = document.getElementById('checkout-content');
+    
+    // Protect the route
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session) {
+        window.location.href = '/'; // Redirect if not logged in
+        return;
     }
+
+    const cartItems = cart.getItems();
+    if (cartItems.length === 0) {
+        checkoutContent.innerHTML = '<h2>Your cart is empty.</h2><a href="/products.html">Go shopping</a>';
+        return;
+    }
+    
+    const subtotal = cart.getTotalPrice();
+    const formattedSubtotal = new Intl.NumberFormat('en-PH', { style: 'currency', currency: 'PHP' }).format(subtotal);
+
+    // Fetch user's profile for shipping info
+    const response = await fetch('/api/profile', {
+        headers: { 'Authorization': `Bearer ${session.access_token}` }
+    });
+    const profile = await response.json();
+    
+    const address = [
+        profile.address_line1,
+        profile.address_line2,
+        profile.city,
+        profile.province,
+        profile.postal_code
+    ].filter(Boolean).join(', '); // Join parts that exist
+
+    checkoutContent.innerHTML = `
+        <h3>Order Summary</h3>
+        <ul>
+            ${cartItems.map(item => `<li>${item.name} (x${item.quantity}) - ${new Intl.NumberFormat('en-PH', { style: 'currency', currency: 'PHP' }).format(item.price * item.quantity)}</li>`).join('')}
+        </ul>
+        <hr style="margin: 1rem 0;">
+        <p><strong>Total: ${formattedSubtotal}</strong></p>
+        
+        <h3>Shipping To:</h3>
+        <p>${profile.full_name}</p>
+        <p>${address || 'No address set. Please <a href="/profile.html">update your profile</a>.'}</p>
+        <br>
+        <button id="place-order-btn" class="btn btn-primary" ${!address ? 'disabled' : ''}>Place Order</button>
+    `;
+
+    document.getElementById('place-order-btn')?.addEventListener('click', async () => {
+        const btn = document.getElementById('place-order-btn');
+        btn.disabled = true;
+        btn.textContent = 'Processing...';
+
+        const orderResponse = await fetch('/api/orders', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${session.access_token}`
+            },
+            body: JSON.stringify({ cartItems: cart.getItems() })
+        });
+
+        if (orderResponse.ok) {
+            const result = await orderResponse.json();
+            cart.clearCart(); // Clear cart on success
+            updateCartUI();
+            window.location.href = `/order-success.html?orderId=${result.order.id}`;
+        } else {
+            alert('Failed to place order. Please try again.');
+            btn.disabled = false;
+            btn.textContent = 'Place Order';
+        }
+    });
+
+} else if (path.endsWith('/order-success.html')) {
+    const params = new URLSearchParams(window.location.search);
+    const orderId = params.get('orderId');
+    if (orderId) {
+        document.getElementById('order-id-display').textContent = `Your Order ID is #${orderId}.`;
+    }
+} else if (path.endsWith('/admin-products.html')) {
+    const tableBody = document.getElementById('products-table-body');
+    const adminContent = document.getElementById('admin-content');
+
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session) {
+        adminContent.innerHTML = '<h1>Access Denied</h1><p>Please log in as an admin.</p>';
+        return;
+    }
+
+    const response = await fetch('/api/admin/products', {
+        headers: { 'Authorization': `Bearer ${session.access_token}` }
+    });
+
+    if (response.status === 403) { // Forbidden
+         adminContent.innerHTML = '<h1>Access Denied</h1><p>You do not have permission to view this page.</p>';
+         return;
+    }
+    
+    if (!response.ok) {
+        adminContent.innerHTML = '<h1>Error</h1><p>Could not load product data.</p>';
+        return;
+    }
+
+    const products = await response.json();
+    
+    tableBody.innerHTML = products.map(p => `
+        <tr>
+            <td>${p.id}</td>
+            <td>${p.name}</td>
+            <td>${p.category}</td>
+            <td>${new Intl.NumberFormat('en-PH', { style: 'currency', currency: 'PHP' }).format(p.price)}</td>
+            <td class="action-btn-group">
+                <a href="/admin-edit-product.html?id=${p.id}">Edit</a>
+                <button>Delete</button>
+            </td>
+        </tr>
+    `).join('');
+}  else if (path.endsWith('/admin-add-product.html')) {
+    const form = document.getElementById('add-product-form');
+    const feedbackEl = document.getElementById('form-feedback');
+
+    // Protect the route
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session) {
+        window.location.href = '/'; // Redirect if not logged in
+        return;
+    }
+
+    form.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const formData = new FormData(form);
+        const productData = Object.fromEntries(formData.entries());
+
+        // Convert price to a number
+        productData.price = parseFloat(productData.price);
+
+        const response = await fetch('/api/admin/products', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${session.access_token}`
+            },
+            body: JSON.stringify(productData)
+        });
+
+        if (response.ok) {
+            // Success, redirect back to the product list
+            window.location.href = '/admin-products.html';
+        } else if (response.status === 403) {
+             feedbackEl.textContent = 'Error: You do not have permission to perform this action.';
+             feedbackEl.className = 'form-feedback error';
+        } else {
+            const result = await response.json();
+            feedbackEl.textContent = `Error: ${result.error || 'Failed to add product.'}`;
+            feedbackEl.className = 'form-feedback error';
+        }
+    });
+} else if (path.endsWith('/admin-edit-product.html')) {
+    const form = document.getElementById('edit-product-form');
+    const feedbackEl = document.getElementById('form-feedback');
+    const pageTitle = document.getElementById('page-title');
+    const imageInput = document.getElementById('image');
+    const imagePreview = document.getElementById('image-preview');
+
+    const params = new URLSearchParams(window.location.search);
+    const productId = params.get('id');
+
+    if (!productId) {
+        form.innerHTML = '<p>No product ID provided. Go back to the <a href="/admin-products.html">product list</a>.</p>';
+        return;
+    }
+
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session) {
+        window.location.href = '/';
+        return;
+    }
+
+    // --- Function to update the image preview ---
+    const updateImagePreview = () => {
+        const url = imageInput.value;
+        if (url) {
+            imagePreview.src = url;
+            imagePreview.style.display = 'block';
+            imagePreview.onerror = () => {
+                // If the link is broken, hide it again
+                imagePreview.style.display = 'none';
+            };
+        } else {
+            imagePreview.style.display = 'none';
+        }
+    };
+    
+    // --- Fetch existing data and populate the form ---
+    const populateForm = async () => {
+        const response = await fetch(`/api/admin/products/${productId}`, {
+            headers: { 'Authorization': `Bearer ${session.access_token}` }
+        });
+
+        if (!response.ok) {
+            form.innerHTML = `<p>Error: Could not load product data. Make sure you are logged in as an admin.</p>`;
+            return;
+        }
+
+        const product = await response.json();
+        
+        pageTitle.textContent = `Edit Product: ${product.name}`;
+        
+        // Populate all form fields
+        form.elements.name.value = product.name;
+        form.elements.category.value = product.category;
+        form.elements.price.value = product.price;
+        form.elements.image.value = product.image || '';
+        form.elements.description.value = product.description || '';
+        
+        // Trigger the preview for the initially loaded image
+        updateImagePreview(); 
+    };
+    
+    await populateForm();
+
+    // --- Add event listener for real-time preview updates ---
+    imageInput.addEventListener('input', updateImagePreview);
+
+    // --- Handle form submission ---
+    form.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const formData = new FormData(form);
+        const productData = Object.fromEntries(formData.entries());
+        productData.price = parseFloat(productData.price);
+
+        const updateResponse = await fetch(`/api/admin/products/${productId}`, {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${session.access_token}`
+            },
+            body: JSON.stringify(productData)
+        });
+
+        if (updateResponse.ok) {
+            window.location.href = '/admin-products.html';
+        } else {
+            const result = await updateResponse.json();
+            feedbackEl.textContent = `Error: ${result.error || 'Failed to update product.'}`;
+            feedbackEl.className = 'form-feedback error';
+        }
+    });
+}
 });

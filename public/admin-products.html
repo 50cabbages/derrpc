@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin: Manage Products - DRE Computer Center</title>
+    <link rel="stylesheet" href="assets/css/base.css">
+    <link rel="stylesheet" href="assets/css/components.css">
+    <link rel="stylesheet" href="assets/css/layout.css">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+<body>
+    <div id="header-placeholder"></div>
+    <main>
+        <div class="container" style="padding: 4rem 0; max-width: 1000px; margin: 0 auto;">
+            <h1 class="section-title">Manage Products</h1>
+            <div id="admin-content">
+                <a href="/admin-add-products.html" class="btn btn-primary" style="margin-bottom: 2rem;">Add New Product</a>
+                <table class="admin-table">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Name</th>
+                            <th>Category</th>
+                            <th>Price</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="products-table-body">
+                        <!-- Product rows will be injected here by JS -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </main>
+    <div id="footer-placeholder"></div>
+    <script src="assets/js/cart.js"></script>
+    <script src="assets/js/main.js"></script>
+</body>
+</html>

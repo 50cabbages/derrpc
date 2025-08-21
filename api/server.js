@@ -7,19 +7,33 @@ const cookieParser = require('cookie-parser'); // Import cookie-parser
 require('dotenv').config({ path: path.resolve(__dirname, '../.env') });
 const { createClient } = require('@supabase/supabase-js');
 
-// Import the auth router
+// Import the routers
 const authRouter = require('./routes/auth'); 
 const profileRouter = require('./routes/profile'); 
+const ordersRouter = require('./routes/orders');
+const adminRouter = require('./routes/admin');
 
 const supabaseUrl = process.env.SUPABASE_URL;
 const supabaseAnonKey = process.env.SUPABASE_ANON_KEY;
+const supabaseServiceKey = process.env.SUPABASE_SERVICE_KEY; // <-- Add this line
 
-if (!supabaseUrl || !supabaseAnonKey) {
-    console.error("Error: Supabase URL or Key is missing. Check your root .env file.");
+// Update the check to include the new service key
+if (!supabaseUrl || !supabaseAnonKey || !supabaseServiceKey) {
+    console.error("Error: Supabase URL, Anon Key, or Service Key is missing. Check your root .env file.");
     process.exit(1);
 }
 
+// Public client, safe for browser and basic server tasks
 const supabase = createClient(supabaseUrl, supabaseAnonKey);
+
+// Admin client, for backend use ONLY. Bypasses RLS.
+const supabaseAdmin = createClient(supabaseUrl, supabaseServiceKey, {
+    auth: {
+        autoRefreshToken: false,
+        persistSession: false
+    }
+});
+
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -32,9 +46,13 @@ app.use(express.static(path.join(__dirname, '../public')));
 
 // --- API ROUTES ---
 
-// Mount the authentication router under the /api/auth path
+// The auth router uses the public client, as it deals with user-facing auth flows
 app.use('/api/auth', authRouter(supabase));
-app.use('/api/profile', profileRouter(supabase));
+
+// The profile router needs the ADMIN client to create/update profiles on behalf of users
+app.use('/api/profile', profileRouter(supabaseAdmin)); // <-- PASS THE ADMIN CLIENT
+app.use('/api/orders', ordersRouter(supabaseAdmin));
+app.use('/api/admin', adminRouter(supabaseAdmin));
 
 
 // Endpoint to provide public Supabase keys to the frontend
@@ -45,6 +63,7 @@ app.get('/api/config', (req, res) => {
     });
 });
 
+// These public data routes can use the standard client
 app.get('/api/products', async (req, res) => {
     const { data, error } = await supabase.from('products').select('*');
     if (error) return res.status(500).json({ error: error.message });

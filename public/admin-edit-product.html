@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin: Edit Product - DRE Computer Center</title>
+    <link rel="stylesheet" href="assets/css/base.css">
+    <link rel="stylesheet" href="assets/css/components.css">
+    <link rel="stylesheet" href="assets/css/layout.css">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+<body>
+    <div id="header-placeholder"></div>
+    <main>
+        <div class="container" style="padding: 4rem 0; max-width: 800px; margin: 0 auto;">
+            <h1 id="page-title" class="section-title">Edit Product</h1>
+            
+            <form id="edit-product-form" class="profile-form" style="grid-template-columns: 1fr;">
+                <!-- Form fields are identical to the add form -->
+                <div class="form-group">
+                    <label for="name">Product Name</label>
+                    <input type="text" id="name" name="name" class="form-input" required>
+                </div>
+                <div class="form-group">
+                    <label for="category">Category</label>
+                    <input type="text" id="category" name="category" class="form-input" required>
+                </div>
+                 <div class="form-group">
+                    <label for="price">Price (PHP)</label>
+                    <input type="number" id="price" name="price" step="0.01" class="form-input" required>
+                </div>
+                <div class="form-group">
+                    <label for="image">Image URL</label>
+                    <input type="url" id="image" name="image" class="form-input" placeholder="https://example.com/image.png">
+                     <img id="image-preview" src="" alt="Image Preview" style="max-width: 200px; margin-top: 1rem; display: none;">
+                </div>
+                <div class="form-group">
+                    <label for="description">Description</label>
+                    <textarea id="description" name="description" class="form-input" rows="5"></textarea>
+                </div>
+                <div class="form-actions">
+                     <div id="form-feedback" class="form-feedback"></div>
+                     <a href="/admin-products.html" class="btn btn-outline">Cancel</a>
+                     <button type="submit" class="btn btn-primary">Save Changes</button>
+                </div>
+            </form>
+
+        </div>
+    </main>
+    <div id="footer-placeholder"></div>
+    <script src="assets/js/cart.js"></script>
+    <script src="assets/js/main.js"></script>
+</body>
+</html>
