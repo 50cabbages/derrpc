@@ -20,19 +20,21 @@
         <div class="container">
             <div class="products-page-layout">
                 <aside class="filters-sidebar">
-                    <div class="filter-group">
-                        <h3>Categories</h3>
-                        <ul id="category-filters">
-                            <!-- Categories will be loaded here -->
-                        </ul>
-                    </div>
+<div class="filter-group">
+    <button id="toggle-filters-btn" class="btn-outline toggle-filters-btn">Toggle Categories</button>
+    <h3>Categories</h3>
+    <ul id="category-filters">
+    </ul>
+</div>
                 </aside>
 
                 <div class="products-main">
                     <h1 class="section-title" style="text-align: left; margin-bottom: 2rem;">Products</h1>
-                    <div class="product-grid" id="products-grid">
-                        <!-- Products will be dynamically loaded here by JS -->
-                    </div>
+<div class="product-grid" id="products-grid">
+    <div class="spinner-container">
+        <div class="spinner"></div>
+    </div>
+</div>
                     <div class="pagination" id="pagination-controls">
                         <!-- Pagination controls will be generated here -->
                     </div>
@@ -40,7 +42,7 @@
             </div>
         </div>
     </main>
-    
+    <div id="cart-panel-placeholder"></div>
     <div id="footer-placeholder"></div>
     <script src="assets/js/cart.js"></script>
     <script src="assets/js/main.js"></script>

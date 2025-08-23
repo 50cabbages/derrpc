@@ -82,6 +82,39 @@ app.get('/api/brands', async (req, res) => {
     res.json(data);
 });
 
+app.get('/api/products/search', async (req, res) => {
+    const { q } = req.query; 
+
+    if (!q) {
+        return res.status(400).json({ error: 'Search query is required.' });
+    }
+
+    const { data, error } = await supabase
+        .from('products')
+        .select('*')
+        .or(`name.ilike.%${q}%,description.ilike.%${q}%`);
+
+    if (error) {
+        return res.status(500).json({ error: error.message });
+    }
+
+    res.json(data);
+});
+
+app.get('/api/products/:id', async (req, res) => {
+    const { id } = req.params;
+    const { data, error } = await supabase
+        .from('products')
+        .select('*') 
+        .eq('id', id)
+        .single(); 
+
+    if (error) {
+        return res.status(404).json({ error: 'Product not found' });
+    }
+    res.json(data);
+});
+
 // --- CATCH-ALL ROUTE ---
 app.get('*', (req, res) => {
     res.sendFile(path.join(__dirname, '../public/index.html'));

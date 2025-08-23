@@ -1,9 +1,9 @@
 <!DOCTYPE html>
 <html lang="en">
-    <head>
+<head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Order Confirmed! - DRE Computer Center</title>
+    <title>Search Results - DRE Computer Center</title>
     <link rel="stylesheet" href="assets/css/base.css">
     <link rel="stylesheet" href="assets/css/components.css">
     <link rel="stylesheet" href="assets/css/layout.css">
@@ -11,12 +11,15 @@
 </head>
 <body>
     <div id="header-placeholder"></div>
+
     <main>
-        <div class="container" style="text-align: center; padding: 6rem 0;">
-            <h1 class="section-title">Thank You!</h1>
-            <p>Your order has been placed successfully.</p>
-            <p id="order-id-display"></p>
-            <a href="/" class="btn btn-primary" style="margin-top: 2rem;">Continue Shopping</a>
+        <div class="container" style="padding: 4rem 0;">
+            <h1 id="search-results-title" class="section-title" style="text-align: left; margin-bottom: 2rem;">Search Results</h1>
+<div class="product-grid" id="search-results-grid">
+    <div class="spinner-container">
+        <div class="spinner"></div>
+    </div>
+</div>
         </div>
     </main>
     <div id="cart-panel-placeholder"></div>
