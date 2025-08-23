@@ -1,3 +1,5 @@
+/* --- START OF CORRECTED admin.css FILE --- */
+
 body.admin-page {
     display: flex;
 }
@@ -196,70 +198,63 @@ body.admin-page {
 
 /* --- DEFINITIVE RESPONSIVENESS --- */
 
-/* Tablet and smaller (max-width: 992px) */
+/* For all screens smaller than a desktop (max-width: 992px) */
 @media (max-width: 992px) {
-    .product-form-grid {
-        grid-template-columns: 1fr; /* Collapse to single column */
+    /* --- GENERAL LAYOUT --- */
+    body.admin-page {
+        display: block; /* Stack sidebar and content vertically */
     }
-}
 
-/* Mobile (max-width: 768px) */
-@media (max-width: 768px) {
-    body.admin-page { display: block; }
+    .admin-main-content {
+        margin-left: 0;
+        width: 100%;
+        padding: 2rem 1.5rem;
+    }
+
+    /* --- SIDEBAR --- */
     .admin-sidebar {
         position: static;
         width: 100%;
         height: auto;
         border-right: none;
         border-bottom: 1px solid var(--border-color);
-    }
-    .admin-main-content {
-        margin-left: 0;
-        width: 100%;
-        padding: 2rem 1.5rem;
-    }
-    .table-wrapper {
-        overflow-x: auto;
-    }
-}
-
-/* Small adjustments for tablet sidebar */
-@media (max-width: 992px) and (min-width: 769px) {
-    .admin-sidebar {
-        flex-direction: row;
-        align-items: center;
-        justify-content: space-between;
-    }
-    .admin-sidebar ul { display: flex; gap: 1.5rem; }
-    .admin-sidebar-header, .admin-sidebar-footer { display: none; }
-}
-
-/* Adjustments for stacked mobile sidebar */
-@media (max-width: 768px) {
-
-    .form-group-row {
-    flex-direction: column;
-    gap: 1.5rem; /* Use the standard group gap */
-}
-
-    .admin-sidebar {
+        /* These rules ensure the correct vertical layout on ALL pages */
         flex-direction: column;
         align-items: flex-start;
     }
-    .admin-sidebar-header {
-        display: block;
-        width: 100%;
-        margin-bottom: 1rem;
-    }
-    .admin-sidebar ul {
-        flex-direction: column;
-        width: 100%;
-        border-top: 1px solid var(--border-color);
-        padding-top: 1rem;
-    }
+    
+    .admin-sidebar-header,
     .admin-sidebar-footer {
         display: block;
         width: 100%;
-        margin-top: 1rem;
+    }
+    .admin-sidebar-header { margin-bottom: 1rem; }
+    .admin-sidebar-footer { margin-top: 1rem; }
+
+    .admin-sidebar ul {
+        display: flex;
+        flex-direction: column;
+        width: 100%;
+        gap: 0;
+        border-top: 1px solid var(--border-color);
+        padding-top: 1rem;
+    }
+
+    /* --- PAGE-SPECIFIC FIXES --- */
+    .product-form-grid {
+        grid-template-columns: 1fr; /* Prevents form overflow */
+    }
+    .table-wrapper {
+        overflow-x: auto; /* Prevents table overflow */
     }
 }
+
+/* Specific adjustments for smaller mobile screens (max-width: 768px) */
+@media (max-width: 768px) {
+    .form-group-row {
+        flex-direction: column; /* Stacks price fields */
+        gap: 1.5rem;
+    }
+}
+
+/* --- END OF CORRECTED admin.css FILE --- */

@@ -274,6 +274,8 @@ document.addEventListener('DOMContentLoaded', async () => {
         loadComponent('_cart-panel.html', 'cart-panel-placeholder')
     ]);
 
+
+    
     document.getElementById('header-search-form')?.addEventListener('submit', (e) => {
     e.preventDefault();
     const searchTerm = e.target.elements.q.value;
@@ -286,7 +288,16 @@ const mobileMenuBtn = document.getElementById('mobile-menu-btn');
 const mainNav = document.getElementById('main-nav-links');
 const menuOverlay = document.getElementById('mobile-menu-overlay');
 
+// Move the nav and overlay to the body to fix stacking context issues
+if (mainNav) {
+    document.body.appendChild(mainNav);
+}
+if (menuOverlay) {
+    document.body.appendChild(menuOverlay);
+}
+
 const toggleMobileMenu = () => {
+    // This function will now work correctly with the moved elements
     const isOpen = mainNav.classList.toggle('is-open');
     menuOverlay.classList.toggle('is-open');
     document.body.classList.toggle('mobile-menu-open', isOpen);

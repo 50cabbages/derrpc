@@ -43,3 +43,9 @@ a:hover {
     font-size: 2.5rem;
     margin-bottom: 3rem;
 }
+
+.page-wrapper {
+    position: relative;
+    overflow-x: hidden;
+    width: 100%;
+}
