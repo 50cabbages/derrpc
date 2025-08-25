@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+              <link rel="icon" type="image/x-icon" href="https://sqpfjdookptzlzkqtmlw.supabase.co/storage/v1/object/public/assets/drelogo.png">
+    <title>PC Builder - DRE Computer Center</title>
+    <link rel="stylesheet" href="assets/css/base.css">
+    <link rel="stylesheet" href="assets/css/components.css">
+    <!-- We will create this new CSS file next -->
+    <link rel="stylesheet" href="assets/css/pc-builder.css"> 
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+<body>
+    <div class="page-wrapper">
+        <div id="header-placeholder"></div>
+
+        <main class="container" style="padding: 4rem 0;">
+            <h1 class="section-title">Build Your Custom PC</h1>
+            
+            <div class="pc-builder-layout">
+                <!-- Left Side: The Blueprint / Component Slots -->
+                <div class="builder-blueprint">
+                    <div class="component-slot" data-category="CPUs">
+                        <div class="slot-label">
+                            <h3>Processor (CPU)</h3>
+                            <span class="required-tag">Required</span>
+                        </div>
+                        <div class="slot-selection">
+                            <button class="btn-choose">Choose a CPU</button>
+                        </div>
+                    </div>
+
+                    <div class="component-slot" data-category="Motherboards">
+                        <div class="slot-label">
+                            <h3>Motherboard</h3>
+                            <span class="required-tag">Required</span>
+                        </div>
+                        <div class="slot-selection">
+                            <button class="btn-choose" disabled>Choose a Motherboard</button>
+                        </div>
+                    </div>
+                    
+                    <div class="component-slot" data-category="RAM">
+                        <div class="slot-label">
+                            <h3>Memory (RAM)</h3>
+                            <span class="required-tag">Required</span>
+                        </div>
+                        <div class="slot-selection">
+                            <button class="btn-choose" disabled>Choose RAM</button>
+                        </div>
+                    </div>
+
+                    <div class="component-slot" data-category="Storage">
+                        <div class="slot-label">
+                            <h3>Storage Drive</h3>
+                            <span class="required-tag">Required</span>
+                        </div>
+                        <div class="slot-selection">
+                            <button class="btn-choose" disabled>Choose Storage</button>
+                        </div>
+                    </div>
+
+                    <div class="component-slot" data-category="PSUs">
+                        <div class="slot-label">
+                            <h3>Power Supply (PSU)</h3>
+                            <span class="required-tag">Required</span>
+                        </div>
+                        <div class="slot-selection">
+                            <button class="btn-choose" disabled>Choose a PSU</button>
+                        </div>
+                    </div>
+
+                           <div class="component-slot" data-category="Monitors">
+                        <div class="slot-label">
+                            <h3>Monitor</h3>
+                            <span class="optional-tag">Optional</span>
+                        </div>
+                        <div class="slot-selection">
+                             <button class="btn-choose" disabled>Choose a Monitor</button>
+                        </div>
+                    </div>
+
+                    <div class="component-slot" data-category="Casings">
+                        <div class="slot-label">
+                            <h3>PC Case</h3>
+                            <span class="required-tag">Required</span>
+                        </div>
+                        <div class="slot-selection">
+                            <button class="btn-choose" disabled>Choose a Case</button>
+                        </div>
+                    </div>
+
+                    <div class="component-slot" data-category="Graphics Cards">
+                        <div class="slot-label">
+                            <h3>Graphics Card (GPU)</h3>
+                            <span class="optional-tag">Optional</span>
+                        </div>
+                        <div class="slot-selection">
+                             <button class="btn-choose" disabled>Choose a GPU</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Right Side: The Live Summary -->
+                <aside class="builder-summary">
+                    <h3>System Summary</h3>
+                    <ul id="summary-list" class="summary-list">
+                        <!-- Summary items will be added here by JS -->
+                    </ul>
+                    <div class="summary-total">
+                        <span>Total Price:</span>
+                        <span id="total-price">₱0.00</span>
+                    </div>
+                    <button id="add-build-to-cart-btn" class="btn btn-primary" style="width: 100%;" disabled>Add to Cart</button>
+                </aside>
+            </div>
+        </main>
+
+        <div id="cart-panel-placeholder"></div>
+        <div id="footer-placeholder"></div>
+    </div>
+
+    <!-- Modal for selecting components -->
+    <div class="modal-overlay" id="component-modal-overlay" style="display: none;">
+        <div id="component-modal-content" class="modal-content" style="max-width: 900px;">
+            <!-- Component selection UI will be injected here by JS -->
+        </div>
+    </div>
+
+    <script src="assets/js/cart.js"></script>
+    <script src="assets/js/main.js"></script>
+    <!-- We will create this new JS file last -->
+    <script src="assets/js/pc-builder.js"></script> 
+</body>
+</html>

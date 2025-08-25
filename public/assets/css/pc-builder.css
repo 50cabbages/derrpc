@@ -1,0 +1,248 @@
+/* --- PC Builder Layout --- */
+.pc-builder-layout {
+    display: grid;
+    grid-template-columns: 2fr 1fr;
+    gap: 2rem;
+    align-items: flex-start;
+}
+
+/* --- Blueprint / Component Slots --- */
+.builder-blueprint {
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    background-color: var(--card-bg);
+}
+
+.component-slot {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1.5rem;
+    border-bottom: 1px solid var(--border-color);
+}
+.component-slot:last-child {
+    border-bottom: none;
+}
+
+.slot-label h3 {
+    margin: 0 0 0.25rem 0;
+    font-size: 1.25rem;
+}
+
+.required-tag, .optional-tag {
+    font-size: 0.8rem;
+    padding: 3px 8px;
+    border-radius: 4px;
+    font-weight: 600;
+}
+.required-tag {
+    background-color: rgba(58, 123, 253, 0.2);
+    color: var(--primary-blue);
+}
+.optional-tag {
+    background-color: rgba(156, 163, 175, 0.2);
+    color: var(--text-secondary);
+}
+
+.btn-choose {
+    background-color: var(--dark-bg);
+    border: 1px solid var(--border-color);
+    color: var(--text-primary);
+    padding: 10px 20px;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+.btn-choose:hover:not(:disabled) {
+    border-color: var(--primary-blue);
+}
+.btn-choose:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+}
+
+/* --- Selected Component Display --- */
+.selected-component {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+.selected-component img {
+    width: 60px;
+    height: 60px;
+    object-fit: contain;
+    background-color: #000;
+    border-radius: 4px;
+}
+.selected-component-info h4 {
+    margin: 0 0 0.25rem 0;
+    font-size: 1rem;
+}
+.selected-component-info p {
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+    margin: 0;
+}
+.btn-remove-component {
+    margin-left: auto;
+    background: none;
+    border: 1px solid var(--border-color);
+    color: var(--text-secondary);
+    border-radius: 50%;
+    width: 30px;
+    height: 30px;
+    cursor: pointer;
+}
+
+/* --- Summary Panel --- */
+.builder-summary {
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    padding: 1.5rem;
+    position: sticky;
+    top: 100px; /* Offset for the sticky header */
+}
+.builder-summary h3 {
+    text-align: center;
+    margin-top: 0;
+    margin-bottom: 1.5rem;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid var(--border-color);
+}
+.summary-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    min-height: 200px;
+}
+.summary-item {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.9rem;
+    margin-bottom: 0.75rem;
+}
+.summary-item .item-name {
+    color: var(--text-secondary);
+}
+.summary-total {
+    display: flex;
+    justify-content: space-between;
+    font-size: 1.5rem;
+    font-weight: 700;
+    margin-top: 1.5rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid var(--border-color);
+}
+
+/* --- Component Selection Modal --- */
+#component-modal-content .modal-header {
+    text-align: center;
+}
+.component-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 1rem;
+    max-height: 60vh;
+    overflow-y: auto;
+    padding: 1rem;
+}
+.component-card {
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    padding: 1rem;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+.component-card:hover {
+    border-color: var(--primary-blue);
+    transform: translateY(-3px);
+}
+.component-card img {
+    width: 100px;
+    height: 100px;
+    object-fit: contain;
+    margin-bottom: 0.5rem;
+}
+.component-card h5 {
+    font-size: 0.9rem;
+    margin: 0.5rem 0;
+    min-height: 40px; /* Reserve space for 2 lines */
+}
+.component-card p {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: var(--primary-blue);
+    margin: 0;
+}
+
+#component-modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.8);
+    display: none; /* Initially hidden, JS will change this to flex */
+    justify-content: center;
+    align-items: center;
+    z-index: 1010; /* High z-index to appear on top of everything */
+    padding: 1rem;
+}
+
+#component-modal-content {
+    position: relative; /* Contains the close button */
+    background-color: var(--card-bg);
+    padding: 1.5rem;
+    border-radius: 12px;
+    width: 100%;
+}
+
+#component-modal-content .modal-header .modal-close-btn {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    background-color: rgba(0, 0, 0, 0.5);
+    border: 1px solid var(--border-color);
+    color: var(--text-primary);
+    font-size: 1.5rem;
+    cursor: pointer;
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    line-height: 1;
+    transition: background-color 0.2s ease;
+}
+
+#component-modal-content .modal-header .modal-close-btn:hover {
+    background-color: rgba(255, 255, 255, 0.1);
+}
+
+@media (max-width: 992px) {
+    .pc-builder-layout {
+        grid-template-columns: 1fr; /* Stack layout into a single column */
+    }
+    .builder-summary {
+        position: static; /* Remove stickiness on mobile */
+        margin-top: 2rem;
+    }
+    .slot-label h3 {
+        font-size: 1.1rem; /* Slightly smaller text for mobile */
+    }
+    .selected-component {
+        flex-direction: column; /* Stack selected item details */
+        align-items: flex-start;
+        gap: 0.5rem;
+    }
+    .btn-remove-component {
+        position: absolute;
+        top: 10px;
+        right: 10px;
+    }
+    .slot-selection {
+        position: relative; /* Needed to position the remove button */
+    }
+}

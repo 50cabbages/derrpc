@@ -2,6 +2,8 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
+    <!-- THIS LINE IS THE CRITICAL FIX -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Admin Dashboard - DRE Computers</title>
     <link rel="stylesheet" href="assets/css/base.css">
     <link rel="stylesheet" href="assets/css/components.css">
@@ -9,11 +11,16 @@
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 <body class="admin-page">
+
+    <!-- The navigation placeholder is a direct child of the body -->
     <div id="admin-nav-placeholder"></div>
+
+    <!-- The main content area is its sibling -->
     <div class="admin-main-content">
          <h1 class="section-title" style="text-align: left;">Dashboard</h1>
          <p>Welcome to the admin panel. Use the navigation on the left to manage your store.</p>
     </div>
+
     <script src="assets/js/admin.js"></script>
 </body>
 </html>

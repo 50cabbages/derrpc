@@ -12,6 +12,8 @@ const authRouter = require('./routes/auth');
 const profileRouter = require('./routes/profile'); 
 const ordersRouter = require('./routes/orders');
 const adminRouter = require('./routes/admin');
+const packagesRouter = require('./routes/packages');
+const builderRouter = require('./routes/builder');
 
 const supabaseUrl = process.env.SUPABASE_URL;
 const supabaseAnonKey = process.env.SUPABASE_ANON_KEY;
@@ -53,6 +55,7 @@ app.use('/api/auth', authRouter(supabase));
 app.use('/api/profile', profileRouter(supabaseAdmin)); // <-- PASS THE ADMIN CLIENT
 app.use('/api/orders', ordersRouter(supabaseAdmin));
 app.use('/api/admin', adminRouter(supabaseAdmin));
+app.use('/api/builder', builderRouter(supabase));
 
 
 // Endpoint to provide public Supabase keys to the frontend
@@ -63,11 +66,62 @@ app.get('/api/config', (req, res) => {
     });
 });
 
+
+
 // These public data routes can use the standard client
 app.get('/api/products', async (req, res) => {
-    const { data, error } = await supabase.from('products').select('*');
-    if (error) return res.status(500).json({ error: error.message });
-    res.json(data);
+    const page = parseInt(req.query.page, 10) || 1;
+    const limit = parseInt(req.query.limit, 10) || 10; // Default to 9 items per page
+    const from = (page - 1) * limit;
+    const to = from + limit - 1;
+
+    // Start building the query to get the total count first
+    let countQuery = supabase
+        .from('products')
+        .select('*', { count: 'exact', head: true });
+
+    // Build the main data query
+    let dataQuery = supabase
+        .from('products')
+        .select('*, brands(name)')
+        .range(from, to);
+    
+    // --- Apply Filters on the Backend ---
+    const { category, brand_id, sort } = req.query;
+    if (category) {
+        countQuery = countQuery.eq('category', category);
+        dataQuery = dataQuery.eq('category', category);
+    }
+    if (brand_id) {
+        countQuery = countQuery.eq('brand_id', brand_id);
+        dataQuery = dataQuery.eq('brand_id', brand_id);
+    }
+    
+    // --- Apply Sorting on the Backend ---
+    const sortPrice = 'sale_price.is.null,price'; // Sort by price, handling sale price first
+    if (sort === 'price-asc') {
+        dataQuery = dataQuery.order(sortPrice, { ascending: true });
+    } else if (sort === 'price-desc') {
+        dataQuery = dataQuery.order(sortPrice, { ascending: false });
+    }
+
+    try {
+        const { data, error } = await dataQuery;
+        const { count, error: countError } = await countQuery;
+
+        if (error || countError) {
+            throw error || countError;
+        }
+
+        res.json({
+            products: data,
+            totalProducts: count,
+            totalPages: Math.ceil(count / limit),
+            currentPage: page
+        });
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
 });
 
 app.get('/api/categories', async (req, res) => {
@@ -77,7 +131,18 @@ app.get('/api/categories', async (req, res) => {
 });
 
 app.get('/api/brands', async (req, res) => {
-    const { data, error } = await supabase.from('brands').select('name, logo_url');
+    const { data, error } = await supabase.from('brands').select('id, name, logo_url');
+    if (error) return res.status(500).json({ error: error.message });
+    res.json(data);
+})
+
+app.get('/api/packages', async (req, res) => {
+    const { data, error } = await supabase
+        .from('packages')
+        .select('*')
+        .eq('is_active', true)
+        .order('id');
+        
     if (error) return res.status(500).json({ error: error.message });
     res.json(data);
 });

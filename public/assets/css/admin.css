@@ -1,204 +1,203 @@
 /* --- START OF CORRECTED admin.css FILE --- */
 
 body.admin-page {
-    display: flex;
+  display: flex;
 }
 
 .admin-sidebar {
-    width: 250px;
-    background-color: var(--card-bg);
-    height: 100vh;
-    position: fixed;
-    top: 0;
-    left: 0;
-    display: flex;
-    flex-direction: column;
-    border-right: 1px solid var(--border-color);
-    padding: 1.5rem;
+  width: 250px;
+  background-color: var(--card-bg);
+  height: 100vh;
+  position: fixed;
+  top: 0;
+  left: 0;
+  display: flex;
+  flex-direction: column;
+  border-right: 1px solid var(--border-color);
+  padding: 1.5rem;
 }
 
 .admin-sidebar-header h3 {
-    font-size: 1.5rem;
-    color: var(--text-primary);
-    margin-bottom: 2rem;
+  font-size: 1.5rem;
+  color: var(--text-primary);
+  margin-bottom: 2rem;
 }
 
 .admin-sidebar ul {
-    list-style: none;
-    flex-grow: 1;
+  list-style: none;
+  flex-grow: 1;
 }
 
 .admin-sidebar ul a {
-    display: block;
-    padding: 0.75rem 0.5rem;
-    color: var(--text-secondary);
-    font-weight: 500;
-    border-radius: 6px;
-    text-decoration: none;
+  display: block;
+  padding: 0.75rem 0.5rem;
+  color: var(--text-secondary);
+  font-weight: 500;
+  border-radius: 6px;
+  text-decoration: none;
 }
 
 .admin-sidebar ul a:hover,
 .admin-sidebar ul a.active {
-    color: var(--text-primary);
+  color: var(--text-primary);
 }
 
 .admin-sidebar-footer {
-    margin-top: auto;
+  margin-top: auto;
 }
 .admin-sidebar-footer .btn {
-    width: 100%;
+  width: 100%;
 }
 
 .admin-main-content {
-    margin-left: 250px; /* Same as sidebar width */
-    padding: 2rem 4rem;
-    width: calc(100% - 250px);
+  margin-left: 250px; /* Same as sidebar width */
+  padding: 2rem 4rem;
+  width: calc(100% - 250px);
 }
 
 .modal-overlay {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background-color: rgba(0, 0, 0, 0.7);
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    z-index: 1000;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.7);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
 }
 
 .modal-content {
-    background-color: var(--card-bg);
-    padding: 2rem;
-    border-radius: 12px;
-    border: 1px solid var(--border-color);
-    width: 90%;
-    max-width: 600px;
+  background-color: var(--card-bg);
+  padding: 2rem;
+  border-radius: 12px;
+  border: 1px solid var(--border-color);
+  width: 90%;
+  max-width: 600px;
 }
 
 .modal-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    border-bottom: 1px solid var(--border-color);
-    padding-bottom: 1rem;
-    margin-bottom: 1rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid var(--border-color);
+  padding-bottom: 1rem;
+  margin-bottom: 1rem;
 }
 
 .modal-close-btn {
-    background: none;
-    border: none;
-    color: var(--text-secondary);
-    font-size: 2rem;
-    cursor: pointer;
+  background: none;
+  border: none;
+  color: var(--text-secondary);
+  font-size: 2rem;
+  cursor: pointer;
 }
 
 .order-details-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 1rem;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
 }
 
 .order-items-list {
-    margin-top: 1rem;
-    border-top: 1px solid var(--border-color);
-    padding-top: 1rem;
+  margin-top: 1rem;
+  border-top: 1px solid var(--border-color);
+  padding-top: 1rem;
 }
 
 .status-select {
-    background-color: var(--dark-bg);
-    border: 1px solid var(--border-color);
-    border-radius: 8px;
-    padding: 10px;
-    color: var(--text-primary);
-    font-size: 1rem;
-    margin-right: 1rem;
+  background-color: var(--dark-bg);
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  padding: 10px;
+  color: var(--text-primary);
+  font-size: 1rem;
+  margin-right: 1rem;
 }
 
 .product-form-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 2rem;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 2rem;
 }
 .form-column h4 {
-    margin-bottom: 1.5rem;
-    border-bottom: 1px solid var(--border-color);
-    padding-bottom: 0.5rem;
+  margin-bottom: 1.5rem;
+  border-bottom: 1px solid var(--border-color);
+  padding-bottom: 0.5rem;
 }
 .form-group-row {
-    display: flex;
-    gap: 1rem;
+  display: flex;
+  gap: 1rem;
 }
 .form-group-row .form-group {
-    flex: 1;
+  flex: 1;
 }
 .form-actions-full-width {
-    grid-column: 1 / -1;
-    display: flex;
-    justify-content: flex-end;
-    align-items: center;
-    gap: 1rem;
-    margin-top: 1rem;
-    border-top: 1px solid var(--border-color);
-    padding-top: 1.5rem;
+  grid-column: 1 / -1;
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 1rem;
+  margin-top: 1rem;
+  border-top: 1px solid var(--border-color);
+  padding-top: 1.5rem;
 }
 
 /* Image Preview */
 #image-preview-container {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
-    gap: 1rem;
-    margin-top: 1rem;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+  gap: 1rem;
+  margin-top: 1rem;
 }
 .img-preview-wrapper {
-    position: relative;
-    border: 1px solid var(--border-color);
-    border-radius: 8px;
-    overflow: hidden;
+  position: relative;
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  overflow: hidden;
 }
 .img-preview-wrapper img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
 }
 .img-remove-btn {
-    position: absolute;
-    top: 5px;
-    right: 5px;
-    background-color: rgba(0,0,0,0.6);
-    color: white;
-    border: none;
-    border-radius: 50%;
-    width: 24px;
-    height: 24px;
-    cursor: pointer;
-    font-weight: bold;
+  position: absolute;
+  top: 5px;
+  right: 5px;
+  background-color: rgba(0, 0, 0, 0.6);
+  color: white;
+  border: none;
+  border-radius: 50%;
+  width: 24px;
+  height: 24px;
+  cursor: pointer;
+  font-weight: bold;
 }
 
 /* Dynamic Specs */
 .spec-field-group {
-    display: flex;
-    gap: 1rem;
-    align-items: center;
-    margin-bottom: 1rem;
+  display: flex;
+  gap: 1rem;
+  align-items: center;
+  margin-bottom: 1rem;
 }
 .spec-field-group .form-input {
-    flex: 1;
+  flex: 1;
 }
 .spec-remove-btn {
-    background: none;
-    border: 1px solid var(--border-color);
-    color: var(--text-secondary);
-    border-radius: 50%;
-    width: 30px;
-    height: 30px;
-    cursor: pointer;
+  background: none;
+  border: 1px solid var(--border-color);
+  color: var(--text-secondary);
+  border-radius: 50%;
+  width: 30px;
+  height: 30px;
+  cursor: pointer;
 }
 
 /* --- DEFINITIVE RESPONSIVENESS --- */
 
-/* For all screens smaller than a desktop (max-width: 992px) */
 @media (max-width: 992px) {
     /* --- GENERAL LAYOUT --- */
     body.admin-page {
@@ -218,7 +217,6 @@ body.admin-page {
         height: auto;
         border-right: none;
         border-bottom: 1px solid var(--border-color);
-        /* These rules ensure the correct vertical layout on ALL pages */
         flex-direction: column;
         align-items: flex-start;
     }
@@ -242,10 +240,20 @@ body.admin-page {
 
     /* --- PAGE-SPECIFIC FIXES --- */
     .product-form-grid {
-        grid-template-columns: 1fr; /* Prevents form overflow */
+        grid-template-columns: 1fr; /* Stacks the form into a single column */
     }
+
+    /* 
+    !!!--- THIS IS THE NEW CRITICAL FIX ---!!!
+    This tells the form columns that they are allowed to shrink smaller
+    than their content's width, preventing the overflow.
+    */
+    .form-column {
+        min-width: 0;
+    }
+
     .table-wrapper {
-        overflow-x: auto; /* Prevents table overflow */
+        overflow-x: auto; /* Prevents table overflow on other pages */
     }
 }
 
@@ -254,6 +262,12 @@ body.admin-page {
     .form-group-row {
         flex-direction: column; /* Stacks price fields */
         gap: 1.5rem;
+    }
+
+    /* --- THIS IS THE NEW FIX --- */
+    .spec-field-group {
+        flex-direction: column; /* Stack the spec key/value inputs vertically */
+        align-items: stretch;   /* Make them take up the full width */
     }
 }
 

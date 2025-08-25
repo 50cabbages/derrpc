@@ -3,6 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+          <link rel="icon" type="image/x-icon" href="https://sqpfjdookptzlzkqtmlw.supabase.co/storage/v1/object/public/assets/drelogo.png">
     <title>All Products - DRE Computer Center</title>
     <!-- Link to new CSS files -->
     <link rel="stylesheet" href="assets/css/base.css">
@@ -31,6 +32,25 @@
 
                 <div class="products-main">
                     <h1 class="section-title" style="text-align: left; margin-bottom: 2rem;">Products</h1>
+
+    <div class="product-view-controls">
+        <div class="filter-group">
+            <label for="brand-filter">Filter by Brand:</label>
+            <select id="brand-filter" class="form-input">
+                <option value="">All Brands</option>
+                <!-- Options will be loaded by JS -->
+            </select>
+        </div>
+        <div class="filter-group">
+            <label for="sort-by">Sort by:</label>
+            <select id="sort-by" class="form-input">
+                <option value="default">Default</option>
+                <option value="price-asc">Price: Low to High</option>
+                <option value="price-desc">Price: High to Low</option>
+            </select>
+        </div>
+    </div>
+
 <div class="product-grid" id="products-grid">
     <div class="spinner-container">
         <div class="spinner"></div>

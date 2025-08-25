@@ -3,6 +3,15 @@ const router = express.Router();
 const multer = require('multer');
 const upload = multer({ storage: multer.memoryStorage() });
 
+const toTitleCase = (str) => {
+  if (!str) return str;
+  return str
+    .toLowerCase()
+    .split(' ')
+    .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+    .join(' ');
+};
+
 module.exports = function(supabase) {
 
     const isAdmin = async (req, res, next) => {
@@ -38,32 +47,90 @@ module.exports = function(supabase) {
     });
 
 router.post('/products', isAdmin, async (req, res) => {
-    const { name, category, price, description, image, sale_price, image_2, image_3, image_4, specifications } = req.body;
+    const productData = req.body;
 
-    if (!name || !category || !price) {
+    if (!productData.name || !productData.category || !productData.price) {
         return res.status(400).json({ error: 'Name, category, and price are required.' });
     }
 
-    let specsObject = null;
-    try {
-        if (specifications) specsObject = JSON.parse(specifications);
-    } catch (e) {
-        return res.status(400).json({ error: 'Specifications field contains invalid JSON.' });
+    productData.category = toTitleCase(productData.category);
+
+    if (productData.category) {
+        const { error: upsertError } = await supabase
+            .from('categories')
+            .upsert({ name: productData.category }, { onConflict: 'name' });
+        
+        if (upsertError) {
+            console.error('Error upserting category:', upsertError);
+        }
     }
+
+    // THE FIX: Remove the temporary property before inserting.
+    // It's not needed for 'add' but good practice to ensure it's clean.
+    delete productData.originalImages;
 
     const { data, error } = await supabase
         .from('products')
-        .insert({ 
-            name, category, price, description, image, 
-            sale_price: sale_price || null, 
-            image_2, image_3, image_4,
-            specifications: specsObject
-        })
+        .insert(productData)
         .select().single();
 
-    if (error) return res.status(500).json({ error: 'Failed to create product.' });
+    if (error) {
+        console.error("Error creating product:", error);
+        return res.status(500).json({ error: 'Failed to create product.', details: error });
+    }
     res.status(201).json({ message: 'Product created successfully!', product: data });
 });
+
+// --- End of Replacement for POST /products ---
+
+
+// --- Start of Replacement for PUT /products/:id ---
+
+router.put('/products/:id', isAdmin, async (req, res) => {
+    const { id } = req.params;
+    const productData = req.body;
+    
+    if (!productData.name || !productData.category || !productData.price) {
+        return res.status(400).json({ error: 'Name, category, and price are required.' });
+    }
+    
+    productData.category = toTitleCase(productData.category);
+    
+    if (productData.category) {
+        const { error: upsertError } = await supabase
+            .from('categories')
+            .upsert({ name: productData.category }, { onConflict: 'name' });
+        
+        if (upsertError) {
+            console.error('Error upserting category:', upsertError);
+        }
+    }
+
+    if (productData.originalImages && Array.isArray(productData.originalImages)) {
+        const newImages = [productData.image, productData.image_2, productData.image_3, productData.image_4].filter(Boolean);
+        const imagesToDelete = productData.originalImages.filter(oldImg => !newImages.includes(oldImg));
+        if (imagesToDelete.length > 0) {
+            const fileNamesToDelete = imagesToDelete.map(url => url.split('/').pop());
+            await supabase.storage.from('product-images').remove(fileNamesToDelete);
+        }
+    }
+    
+    // THE FIX: Remove the temporary property before updating.
+    delete productData.originalImages;
+
+    const { data, error } = await supabase
+        .from('products')
+        .update(productData)
+        .eq('id', id)
+        .select().single();
+
+    if (error) {
+        console.error("Error updating product:", error);
+        return res.status(500).json({ error: 'Failed to update product.', details: error });
+    }
+    res.status(200).json({ message: 'Product updated successfully!', product: data });
+});
+
     router.get('/products/:id', isAdmin, async (req, res) => {
         const { id } = req.params;
         const { data, error } = await supabase
@@ -78,35 +145,7 @@ router.post('/products', isAdmin, async (req, res) => {
         res.json(data);
     });
 
-router.put('/products/:id', isAdmin, async (req, res) => {
-    const { id } = req.params;
-    const { name, category, price, description, image, sale_price, image_2, image_3, image_4, specifications } = req.body;
-    
-    if (!name || !category || !price) {
-        return res.status(400).json({ error: 'Name, category, and price are required.' });
-    }
-    
-    let specsObject = null;
-    try {
-        if (specifications) specsObject = JSON.parse(specifications);
-    } catch (e) {
-        return res.status(400).json({ error: 'Specifications field contains invalid JSON.' });
-    }
 
-    const { data, error } = await supabase
-        .from('products')
-        .update({
-            name, category, price, description, image,
-            sale_price: sale_price || null,
-            image_2, image_3, image_4,
-            specifications: specsObject
-        })
-        .eq('id', id)
-        .select().single();
-
-    if (error) return res.status(500).json({ error: 'Failed to update product.' });
-    res.status(200).json({ message: 'Product updated successfully!', product: data });
-});
 
     router.delete('/products/:id', isAdmin, async (req, res) => {
         const { id } = req.params;
@@ -208,6 +247,27 @@ router.put('/products/:id', isAdmin, async (req, res) => {
         .getPublicUrl(data.path);
 
     res.status(200).json({ imageUrl: publicUrl });
+});
+
+  router.get('/packages', isAdmin, async (req, res) => {
+        const { data, error } = await supabase.from('packages').select('*').order('id');
+        if (error) return res.status(500).json({ error: error.message });
+        res.json(data);
+    });
+
+router.post('/packages', isAdmin, async (req, res) => {
+    const { name, image_url, price_complete, price_unit_only, description, is_active, category } = req.body;
+    if (!name || !price_complete || !image_url) {
+        return res.status(400).json({ error: 'Name, price, and image URL are required.' });
+    }
+    
+    const { data, error } = await supabase
+        .from('packages')
+        .insert({ name, image_url, price_complete, price_unit_only, description, is_active, category }) // <-- Add category here
+        .select().single();
+
+    if (error) return res.status(500).json({ error: 'Failed to create package.' });
+    res.status(201).json({ message: 'Package created successfully!', package: data });
 });
 
     return router;
