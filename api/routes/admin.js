@@ -14,6 +14,7 @@ const toTitleCase = (str) => {
 
 module.exports = function(supabase) {
 
+
     const isAdmin = async (req, res, next) => {
         if (!req.headers.authorization) {
             return res.status(401).json({ error: 'No authorization header provided.' });
@@ -39,6 +40,19 @@ module.exports = function(supabase) {
         req.user = user;
         next();
     };
+
+    
+        router.get('/compatibility/sockets', isAdmin, async (req, res) => {
+        const { data, error } = await supabase.from('cpu_sockets').select('id, name');
+        if (error) return res.status(500).json({ error: error.message });
+        res.json(data);
+    });
+
+    router.get('/compatibility/ram_types', isAdmin, async (req, res) => {
+        const { data, error } = await supabase.from('ram_types').select('id, name');
+        if (error) return res.status(500).json({ error: error.message });
+        res.json(data);
+    });
 
     router.get('/products', isAdmin, async (req, res) => {
         const { data, error } = await supabase.from('products').select('*').order('id');

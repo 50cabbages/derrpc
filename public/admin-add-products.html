@@ -1,29 +1,54 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Admin: Add Product</title>
-    <link rel="stylesheet" href="assets/css/base.css">
-    <link rel="stylesheet" href="assets/css/components.css">
-    <link rel="stylesheet" href="assets/css/admin.css">
+    <link rel="stylesheet" href="assets/css/base.css" />
+    <link rel="stylesheet" href="assets/css/components.css" />
+    <link rel="stylesheet" href="assets/css/admin.css" />
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-</head>
-<body class="admin-page">
+    <script>
+      (function () {
+        try {
+          var theme = localStorage.getItem("theme");
+          if (theme === "light") {
+            document.documentElement.classList.add("light-theme");
+          }
+        } catch (e) {}
+      })();
+    </script>
+  </head>
+  <body class="admin-page">
     <div id="admin-nav-placeholder"></div>
     <div class="admin-main-content">
-        <h1 class="section-title" style="text-align: left;">Add New Product</h1>
+      <h1 class="section-title" style="text-align: left">Add New Product</h1>
 <form id="product-form" class="product-form-grid">
+
+    <!-- Column 1: Core Product Details -->
     <div class="form-column">
         <h4>Product Details</h4>
         <div class="form-group">
             <label for="name">Product Name</label>
             <input type="text" id="name" name="name" class="form-input" required>
         </div>
-        <div class="form-group">
-            <label for="category">Category</label>
-            <input type="text" id="category" name="category" class="form-input" required>
-        </div>
+<div class="form-group">
+    <label for="category-select">Category</label>
+    <select id="category-select" class="form-input" required>
+        <!-- Options loaded by JS -->
+    </select>
+    <!-- Hidden input to hold the final category value -->
+    <input type="hidden" id="category" name="category">
+</div>
+
+<!-- THIS IS THE NEW, HIDDEN INPUT FIELD -->
+<div class="form-group" id="new-category-group" style="display: none;">
+    <label for="new-category-input">New Category Name</label>
+    <div class="category-input-group">
+        <input type="text" id="new-category-input" class="form-input" placeholder="e.g., Monitors">
+        <button type="button" id="cancel-add-category-btn" class="btn-add-new">&times;</button>
+    </div>
+</div>
         <div class="form-group-row">
             <div class="form-group">
                 <label for="price">Original Price (PHP)</label>
@@ -34,25 +59,25 @@
                 <input type="text" inputmode="decimal" id="sale_price" name="sale_price" class="form-input" placeholder="Optional">
             </div>
         </div>
-        <div class="form-group-row">
-    <div class="form-group">
-        <label for="stock">Stock Quantity</label>
-        <input type="number" id="stock" name="stock" class="form-input" value="0" required>
-    </div>
-    <div class="form-group">
-        <label for="brand_id">Brand</label>
-        <select id="brand_id" name="brand_id" class="form-input">
-            <!-- Brand options will be loaded here by JavaScript -->
-            <option value="">Select a Brand</option>
-        </select>
-    </div>
-</div>
+         <div class="form-group-row">
+            <div class="form-group">
+                <label for="stock">Stock Quantity</label>
+                <input type="number" id="stock" name="stock" class="form-input" value="0" required>
+            </div>
+            <div class="form-group">
+                <label for="brand_id">Brand</label>
+                <select id="brand_id" name="brand_id" class="form-input">
+                    <option value="">Select a Brand</option>
+                </select>
+            </div>
+        </div>
         <div class="form-group">
             <label for="description">Description</label>
             <textarea id="description" name="description" class="form-input" rows="5"></textarea>
         </div>
     </div>
 
+    <!-- Column 2: Images & Compatibility -->
     <div class="form-column">
         <h4>Images</h4>
         <div class="form-group">
@@ -61,6 +86,14 @@
             <div id="image-preview-container"></div>
         </div>
         
+        <h4>Compatibility</h4>
+        <div id="compatibility-fields-container">
+            <!-- Compatibility dropdowns will be loaded here by JS -->
+        </div>
+    </div>
+    
+    <!-- Column 3: Specifications -->
+    <div class="form-column">
         <h4>Specifications</h4>
         <div id="spec-fields-container">
             <!-- Dynamic spec fields will be added here -->
@@ -68,6 +101,7 @@
         <button type="button" id="add-spec-btn" class="btn btn-outline" style="margin-top: 1rem;">+ Add Specification</button>
     </div>
 
+    <!-- This will now correctly span the full width at the bottom -->
     <div class="form-actions-full-width">
         <div id="form-feedback" class="form-feedback"></div>
         <a href="/admin-products.html" class="btn btn-outline">Cancel</a>
@@ -76,5 +110,13 @@
 </form>
     </div>
     <script src="assets/js/admin.js"></script>
-</body>
+
+    <div class="modal-overlay hidden" id="generic-modal-overlay">
+      <div class="modal-content" id="generic-modal-content">
+        <!-- Modal content will be injected here by JS -->
+      </div>
+    </div>
+
+    <div id="toast-container"></div>
+  </body>
 </html>

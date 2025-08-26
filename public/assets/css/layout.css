@@ -1,10 +1,38 @@
 /* --- HOME PAGE LAYOUT --- */
 .hero {
+    position: relative; /* Crucial for positioning overlays */
     text-align: center;
-    padding: 6rem 0;
-    background: linear-gradient(rgba(10,15,24,0.7), rgba(10,15,24,0.9)), url('https://images.unsplash.com/photo-1593640408182-31c70c8268f5?q=80&w=2042') no-repeat center center/cover;
+    padding: 12rem 0; /* Your increased padding */
+    background: url('https://images.unsplash.com/photo-1593640408182-31c70c8268f5?q=80&w=2042') no-repeat center center/cover;
+    color: white; /* Ensure text is white by default */
+
+    -webkit-mask-image: linear-gradient(to bottom, black 85%, transparent 100%);
+    mask-image: linear-gradient(to bottom, black 85%, transparent 100%);
 }
 
+
+/* This ::before pseudo-element creates the dark tint over the image */
+.hero::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(10, 15, 24, 0.7); /* Dark overlay */
+    z-index: 1; /* Sits below the content */
+}
+
+.light-theme .hero::before {
+    background: rgba(255, 255, 255, 0.25); /* A subtle, semi-transparent WHITE overlay */
+}
+
+
+/* We need to give the hero content a higher z-index to sit on top of the overlays */
+.hero .container {
+    position: relative;
+    z-index: 3;
+}
 .hero h1 {
     font-size: 3.5rem;
     margin-bottom: 1rem;
@@ -31,11 +59,15 @@
     justify-content: center;
 }
 
+
+
 .home-categories, .home-brands {
+    position: relative;
     background-color: var(--card-bg);
-    margin-top: 4rem;
+    /* margin-top: 4rem; <--- You mentioned you removed this, which is fine */
     padding: 5rem 0;
 }
+
 
 /* --- PRODUCTS PAGE LAYOUT --- */
 .products-page-layout {
@@ -365,9 +397,75 @@ input[type=number]::-webkit-outer-spin-button {
     /* This will center the grid itself within the container */
     margin-left: auto;
     margin-right: auto;
-    /* We can set a max-width based on the number of items */
-    /* e.g., for 4 items: (230px * 4) + (1.5rem * 3) = 920px + 72px = ~992px */
-    max-width: 1020px; 
+    max-width: 1400px; 
+}
+
+#packages-container .product-grid {
+    grid-template-columns: repeat(3, 1fr);
+    gap: 2rem; /* You might want to adjust the gap slightly */
+}
+
+.hero-search-form {
+    display: flex;
+    max-width: 600px;
+    margin: 2rem auto 2.5rem auto; /* Center it and add space */
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    overflow: hidden; /* To keep the button inside the rounded corners */
+    background-color: rgba(17, 24, 39, 0.8); /* Match card-bg but with transparency */
+}
+
+.hero-search-form input {
+    flex-grow: 1; /* Take up most of the space */
+    background: none;
+    border: none;
+    padding: 16px 24px;
+    font-size: 1.1rem;
+    color: var(--text-primary);
+    outline: none;
+}
+
+.hero-search-form input::placeholder {
+    color: var(--text-secondary);
+}
+
+.hero-search-form button {
+    border-radius: 0; /* Remove radius to fit flush */
+    border: none;
+    padding: 0 28px;
+    white-space: nowrap;
+}
+
+.light-theme .hero {
+    /* Change the main heading color for readability */
+    color: var(--text-primary); 
+}
+
+.light-theme .hero p {
+    /* Change the paragraph color */
+    color: #171a1f;
+}
+
+.light-theme .hero-search-form {
+    /* Give the search bar a light background */
+    background-color: #ffffff;
+    border-color: #d1d5db; /* A slightly darker border for definition */
+}
+
+.light-theme .hero-search-form input {
+    /* Make the input text dark */
+    color: var(--text-primary);
+}
+
+.light-theme .hero-search-form input::placeholder {
+    /* Adjust the placeholder color for the light background */
+    color: var(--text-secondary);
+}
+
+@media (max-width: 992px) {
+    #packages-container .product-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
 }
 
 /* Responsive adjustments for the new controls */
@@ -416,4 +514,10 @@ input[type=number]::-webkit-outer-spin-button {
         grid-template-columns: repeat(2, 1fr);
         gap: 1rem; /* A slightly smaller gap for small screens */
     }
+
+      #packages-container .product-grid {
+        grid-template-columns: 1fr;
+    }
+
 }
+

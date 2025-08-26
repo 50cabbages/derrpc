@@ -1,73 +1,106 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-          <link rel="icon" type="image/x-icon" href="https://sqpfjdookptzlzkqtmlw.supabase.co/storage/v1/object/public/assets/drelogo.png">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link
+      rel="icon"
+      type="image/x-icon"
+      href="https://sqpfjdookptzlzkqtmlw.supabase.co/storage/v1/object/public/assets/drelogo.png"
+    />
     <title>All Products - DRE Computer Center</title>
     <!-- Link to new CSS files -->
-    <link rel="stylesheet" href="assets/css/base.css">
-    <link rel="stylesheet" href="assets/css/components.css">
-    <link rel="stylesheet" href="assets/css/layout.css">
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="assets/css/base.css" />
+    <link rel="stylesheet" href="assets/css/components.css" />
+    <link rel="stylesheet" href="assets/css/layout.css" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-</head>
-<body>
-        <div class="page-wrapper">
-    <div id="header-placeholder"></div>
+    <script>
+      (function () {
+        try {
+          var theme = localStorage.getItem("theme");
+          if (theme === "light") {
+            document.documentElement.classList.add("light-theme");
+          }
+        } catch (e) {}
+      })();
+    </script>
+  </head>
+  <body>
+    <div class="page-wrapper">
+      <div id="header-placeholder"></div>
 
-    <main>
+      <main>
         <div class="container">
-            <div class="products-page-layout">
-                <aside class="filters-sidebar">
-<div class="filter-group">
-    <button id="toggle-filters-btn" class="btn-outline toggle-filters-btn">Toggle Categories</button>
-    <h3>Categories</h3>
-    <ul id="category-filters">
-    </ul>
-</div>
-                </aside>
+          <div class="products-page-layout">
+            <aside class="filters-sidebar">
+              <div class="filter-group">
+                <button
+                  id="toggle-filters-btn"
+                  class="btn-outline toggle-filters-btn"
+                >
+                  Toggle Categories
+                </button>
+                <h3>Categories</h3>
+                <ul id="category-filters"></ul>
+              </div>
+            </aside>
 
-                <div class="products-main">
-                    <h1 class="section-title" style="text-align: left; margin-bottom: 2rem;">Products</h1>
+            <div class="products-main">
+              <h1
+                class="section-title"
+                style="text-align: left; margin-bottom: 2rem"
+              >
+                Products
+              </h1>
 
-    <div class="product-view-controls">
-        <div class="filter-group">
-            <label for="brand-filter">Filter by Brand:</label>
-            <select id="brand-filter" class="form-input">
-                <option value="">All Brands</option>
-                <!-- Options will be loaded by JS -->
-            </select>
-        </div>
-        <div class="filter-group">
-            <label for="sort-by">Sort by:</label>
-            <select id="sort-by" class="form-input">
-                <option value="default">Default</option>
-                <option value="price-asc">Price: Low to High</option>
-                <option value="price-desc">Price: High to Low</option>
-            </select>
-        </div>
-    </div>
-
-<div class="product-grid" id="products-grid">
-    <div class="spinner-container">
-        <div class="spinner"></div>
-    </div>
-</div>
-                    <div class="pagination" id="pagination-controls">
-                        <!-- Pagination controls will be generated here -->
-                    </div>
+              <div class="product-view-controls">
+                <div class="filter-group">
+                  <label for="brand-filter">Filter by Brand:</label>
+                  <select id="brand-filter" class="form-input">
+                    <option value="">All Brands</option>
+                    <!-- Options will be loaded by JS -->
+                  </select>
                 </div>
+                <div class="filter-group">
+                  <label for="sort-by">Sort by:</label>
+                  <select id="sort-by" class="form-input">
+                    <option value="default">Default</option>
+                    <option value="price-asc">Price: Low to High</option>
+                    <option value="price-desc">Price: High to Low</option>
+                  </select>
+                </div>
+              </div>
+
+              <div class="product-grid" id="products-grid">
+                <div class="spinner-container">
+                  <div class="spinner"></div>
+                </div>
+              </div>
+              <div class="pagination" id="pagination-controls">
+                <!-- Pagination controls will be generated here -->
+              </div>
             </div>
+          </div>
         </div>
-    </main>
-    <div id="cart-panel-placeholder"></div>
-    <div id="footer-placeholder"></div>
+      </main>
+      <div id="cart-panel-placeholder"></div>
+      <div id="footer-placeholder"></div>
     </div>
-    
+
     <script src="assets/js/cart.js"></script>
     <script src="assets/js/main.js"></script>
-</body>
+    <div class="modal-overlay hidden" id="generic-modal-overlay">
+      <div class="modal-content" id="generic-modal-content">
+        <!-- Modal content will be injected here by JS -->
+      </div>
+    </div>
+
+    <div id="toast-container"></div>
+  </body>
 </html>

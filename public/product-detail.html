@@ -1,43 +1,66 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="icon" type="image/x-icon" href="https://sqpfjdookptzlzkqtmlw.supabase.co/storage/v1/object/public/assets/drelogo.png">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link
+      rel="icon"
+      type="image/x-icon"
+      href="https://sqpfjdookptzlzkqtmlw.supabase.co/storage/v1/object/public/assets/drelogo.png"
+    />
     <title>Product Details - DRE Computer Center</title>
-    <link rel="stylesheet" href="assets/css/base.css">
-    <link rel="stylesheet" href="assets/css/components.css">
-    <link rel="stylesheet" href="assets/css/layout.css">
+    <link rel="stylesheet" href="assets/css/base.css" />
+    <link rel="stylesheet" href="assets/css/components.css" />
+    <link rel="stylesheet" href="assets/css/layout.css" />
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-</head>
-<body>
+    <script>
+      (function () {
+        try {
+          var theme = localStorage.getItem("theme");
+          if (theme === "light") {
+            document.documentElement.classList.add("light-theme");
+          }
+        } catch (e) {}
+      })();
+    </script>
+  </head>
+  <body>
     <div class="page-wrapper">
-        <div id="header-placeholder"></div>
+      <div id="header-placeholder"></div>
 
-        <main>
-            <!-- Main container for the product detail content -->
-            <div class="container">
-                <div id="product-detail-content">
-                    <div class="spinner-container"><div class="spinner"></div></div>
-                </div>
+      <main>
+        <!-- Main container for the product detail content -->
+        <div class="container">
+          <div id="product-detail-content">
+            <div class="spinner-container"><div class="spinner"></div></div>
+          </div>
+        </div>
+
+        <!-- Related products section, now correctly positioned -->
+        <section class="related-products centered-grid-section">
+          <div class="container">
+            <h2 class="section-title" id="related-products-title">
+              Related Products
+            </h2>
+            <div class="product-grid" id="related-products-grid">
+              <!-- Related products will be loaded here by JS -->
             </div>
+          </div>
+        </section>
+      </main>
 
-            <!-- Related products section, now correctly positioned -->
-            <section class="related-products centered-grid-section">
-                <div class="container">
-                    <h2 class="section-title" id="related-products-title">Related Products</h2>
-                    <div class="product-grid" id="related-products-grid">
-                        <!-- Related products will be loaded here by JS -->
-                    </div>
-                </div>
-            </section>
-        </main>
-
-        <div id="cart-panel-placeholder"></div>
-        <div id="footer-placeholder"></div>
+      <div id="cart-panel-placeholder"></div>
+      <div id="footer-placeholder"></div>
     </div>
-    
+
     <script src="assets/js/cart.js"></script>
     <script src="assets/js/main.js"></script>
-</body>
+    <div class="modal-overlay hidden" id="generic-modal-overlay">
+      <div class="modal-content" id="generic-modal-content">
+        <!-- Modal content will be injected here by JS -->
+      </div>
+    </div>
+
+    <div id="toast-container"></div>
+  </body>
 </html>

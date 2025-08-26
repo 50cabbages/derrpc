@@ -1,51 +1,82 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
+  <head>
+    <meta charset="UTF-8" />
     <!-- This meta tag is crucial for responsiveness -->
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-          <link rel="icon" type="image/x-icon" href="https://sqpfjdookptzlzkqtmlw.supabase.co/storage/v1/object/public/assets/drelogo.png">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link
+      rel="icon"
+      type="image/x-icon"
+      href="https://sqpfjdookptzlzkqtmlw.supabase.co/storage/v1/object/public/assets/drelogo.png"
+    />
     <title>Our Location - DRE Computer Center</title>
-    <link rel="stylesheet" href="assets/css/base.css">
-    <link rel="stylesheet" href="assets/css/components.css">
-    <link rel="stylesheet" href="assets/css/layout.css">
+    <link rel="stylesheet" href="assets/css/base.css" />
+    <link rel="stylesheet" href="assets/css/components.css" />
+    <link rel="stylesheet" href="assets/css/layout.css" />
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-</head>
-<body>
+    <script>
+      (function () {
+        try {
+          var theme = localStorage.getItem("theme");
+          if (theme === "light") {
+            document.documentElement.classList.add("light-theme");
+          }
+        } catch (e) {}
+      })();
+    </script>
+  </head>
+  <body>
     <div class="page-wrapper">
-        <div id="header-placeholder"></div>
+      <div id="header-placeholder"></div>
 
-        <main class="container" style="padding: 4rem 0;">
-            <div class="info-card">
-                <h1 class="section-title">DRE Computer Center Location</h1>
-                <div class="map-container">
-                    <!-- THE FIX: Removed width="800" and height="600" attributes -->
-                    <iframe 
-                        src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d1206.1764044382967!2d121.61300013860081!3d13.939749374708358!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x33bd4b51f40c349b%3A0xb74c457f45a0b9a7!2sDRE%20Computer%20Center!5e1!3m2!1sen!2sph!4v1755929733534!5m2!1sen!2sph" 
-                        style="border:0;" 
-                        allowfullscreen="" 
-                        loading="lazy" 
-                        referrerpolicy="no-referrer-when-downgrade">
-                    </iframe>
-                </div>
-                <div class="info-details">
-                    <p><strong>Street:</strong> 43 Quezon Ave. Brgy. 2</p>
-                    <p><strong>City:</strong> Lucena City</p>
-                    <p><strong>Province:</strong> Quezon Province</p>
-                    <p><strong>ZIP Code:</strong> 4301</p>
-                    <p><strong>Mobile:</strong> 0907 400 1112</p>
-                    <p><strong>Email:</strong> drecomputercenter.sales@gmail.com</p>
-                    <p><strong>Other links:</strong> <a href="#">Instagram</a>, <a href="#">Facebook</a></p>
-                    <p><strong>Additional Info:</strong> Beside St. Veronica Clinical Laboratory</p>
-                    <p><strong>Store hours:</strong> Open Monday - Sunday from 9:00 am to 7:00 pm</p>
-                </div>
-            </div>
-        </main>
+      <main class="container" style="padding: 4rem 0">
+        <div class="info-card">
+          <h1 class="section-title">DRE Computer Center Location</h1>
+          <div class="map-container">
+            <!-- THE FIX: Removed width="800" and height="600" attributes -->
+            <iframe
+              src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d1206.1764044382967!2d121.61300013860081!3d13.939749374708358!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x33bd4b51f40c349b%3A0xb74c457f45a0b9a7!2sDRE%20Computer%20Center!5e1!3m2!1sen!2sph!4v1755929733534!5m2!1sen!2sph"
+              style="border: 0"
+              allowfullscreen=""
+              loading="lazy"
+              referrerpolicy="no-referrer-when-downgrade"
+            >
+            </iframe>
+          </div>
+          <div class="info-details">
+            <p><strong>Street:</strong> 43 Quezon Ave. Brgy. 2</p>
+            <p><strong>City:</strong> Lucena City</p>
+            <p><strong>Province:</strong> Quezon Province</p>
+            <p><strong>ZIP Code:</strong> 4301</p>
+            <p><strong>Mobile:</strong> 0907 400 1112</p>
+            <p><strong>Email:</strong> drecomputercenter.sales@gmail.com</p>
+            <p>
+              <strong>Other links:</strong> <a href="#">Instagram</a>,
+              <a href="#">Facebook</a>
+            </p>
+            <p>
+              <strong>Additional Info:</strong> Beside St. Veronica Clinical
+              Laboratory
+            </p>
+            <p>
+              <strong>Store hours:</strong> Open Monday - Sunday from 9:00 am to
+              7:00 pm
+            </p>
+          </div>
+        </div>
+      </main>
 
-        <div id="cart-panel-placeholder"></div>
-        <div id="footer-placeholder"></div>
+      <div id="cart-panel-placeholder"></div>
+      <div id="footer-placeholder"></div>
     </div>
     <script src="assets/js/cart.js"></script>
     <script src="assets/js/main.js"></script>
-</body>
+    <div class="modal-overlay hidden" id="generic-modal-overlay">
+      <div class="modal-content" id="generic-modal-content">
+        <!-- Modal content will be injected here by JS -->
+      </div>
+    </div>
+
+    <div id="toast-container"></div>
+  </body>
 </html>

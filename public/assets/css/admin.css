@@ -117,9 +117,10 @@ body.admin-page {
 }
 
 .product-form-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 2rem;
+    display: grid;
+    /* Create a flexible 3-column layout on desktop */
+    grid-template-columns: repeat(3, 1fr);
+    gap: 2rem;
 }
 .form-column h4 {
   margin-bottom: 1.5rem;
@@ -194,6 +195,30 @@ body.admin-page {
   width: 30px;
   height: 30px;
   cursor: pointer;
+}
+
+.category-input-group {
+    display: flex;
+    gap: 0.5rem;
+    align-items: center;
+}
+.category-input-group select {
+    flex-grow: 1; /* Allow the select to take up available space */
+}
+.btn-add-new {
+    flex-shrink: 0;
+    width: 40px;
+    height: 40px;
+    border-radius: 8px;
+    background-color: var(--dark-bg);
+    border: 1px solid var(--border-color);
+    color: var(--text-primary);
+    font-size: 1.5rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+.btn-add-new:hover {
+    border-color: var(--primary-blue);
 }
 
 /* --- DEFINITIVE RESPONSIVENESS --- */

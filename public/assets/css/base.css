@@ -9,6 +9,15 @@
     --border-color: #374151;
 }
 
+html.light-theme {
+    --dark-bg: #f9fafb;
+    --card-bg: #ffffff;
+    --text-primary: #111827;
+    --text-secondary: #6b7280;
+    --border-color: #e5e7eb;
+    --primary-blue: #3a7bfd;
+}
+
 * {
     margin: 0;
     padding: 0;

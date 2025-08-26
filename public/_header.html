@@ -13,6 +13,8 @@
                 <li><a href="address.html">Location</a></li>
                 <li><a href="how-to-order.html">How to Order</a></li>
             </ul>
+            <!-- THIS IS THE NEW DEDICATED CONTAINER FOR MOBILE AUTH LINKS -->
+            <div id="mobile-auth-container"></div>
         </nav>
 
         <div class="header-actions">
@@ -25,14 +27,24 @@
                 <span id="cart-count-badge">0</span>
             </button>
             
-            <!-- Auth container is back in its correct place -->
+            <!-- This is the DESKTOP-ONLY auth container -->
             <div id="auth-container">
                 <a href="/api/auth/google" class="btn btn-outline" id="login-btn">Login</a>
-                <div id="user-info" class="user-info hidden">
-                    <span id="user-display-name"></span>
-                    <a href="/profile.html" class="profile-link">My Profile</a>
-                    <button id="logout-btn" class="btn-logout">Logout</button>
-                </div>
+<div id="user-info" class="user-info hidden">
+<div class="dropdown-container">
+    <button class="dropdown-toggle" id="user-dropdown-btn">
+        <span class="welcome-text">Welcome, </span>
+        <span class="user-name-display"></span> <!-- For the user's name -->
+        <span class="dropdown-arrow">▼</span> <!-- The indicator -->
+    </button>
+    <div class="dropdown-menu" id="user-dropdown-menu">
+        <a href="/profile.html" class="dropdown-item">My Profile</a>
+            <hr class="dropdown-divider">
+    <a href="#" class="dropdown-item" id="theme-toggle-btn">Toggle Theme</a>
+        <a href="#" class="dropdown-item" id="logout-btn">Logout</a>
+    </div>
+</div>
+</div>
             </div>
             
             <button class="mobile-menu-btn" id="mobile-menu-btn">
@@ -44,4 +56,4 @@
     </div>
 </header>
 
-<div class="mobile-menu-overlay" id="mobile-menu-overlay"></div>
+<!-- <div class="mobile-menu-overlay" id="mobile-menu-overlay"></div> -->

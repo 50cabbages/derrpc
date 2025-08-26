@@ -757,7 +757,276 @@ body.mobile-menu-open {
     overflow: hidden;
 }
 
+.dropdown-container {
+    position: relative; /* This is crucial for positioning the menu */
+}
+
+.dropdown-toggle {
+    background: none;
+    border: none;
+    color: var(--text-primary);
+    font-size: 1rem;
+    font-weight: 500;
+    cursor: pointer;
+    padding: 8px 12px; /* Give it some space */
+    display: flex; /* Use flex to align items */
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.dropdown-menu {
+    display: none; /* Hidden by default */
+    position: absolute;
+    top: 120%; /* Position it below the toggle button */
+    right: 0;
+    background-color: var(--card-bg);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    min-width: 160px;
+    z-index: 110; /* Ensure it's on top of other content */
+    box-shadow: 0 8px 16px rgba(0,0,0,0.2);
+}
+
+.dropdown-menu.active {
+    display: block; /* Show when active */
+}
+
+.dropdown-item {
+    display: block;
+    padding: 12px 16px;
+    color: var(--text-secondary);
+    text-decoration: none;
+    font-size: 0.9rem;
+}
+
+.dropdown-item:hover {
+    background-color: var(--dark-bg);
+    color: var(--text-primary);
+}
+
+.dropdown-arrow {
+    font-size: 0.7rem; /* Make the arrow a bit smaller */
+    transition: transform 0.2s ease;
+}
+
+/* Add this to rotate the arrow when the menu is open */
+.dropdown-toggle:has(+ .dropdown-menu.active) .dropdown-arrow {
+    transform: rotate(180deg);
+}
+
+/* By default, hide the "Welcome" text */
+.welcome-text {
+    display: none;
+}
+/* --- HIDE MOBILE-ONLY ELEMENTS ON DESKTOP --- */
+#mobile-auth-container {
+    display: none;
+}
+
+.dropdown-divider {
+    border: none;
+    border-top: 1px solid var(--border-color);
+    margin: 4px 0;
+}
+
+/* --- LIGHT THEME OVERRIDES --- */
+
+/* NEW: Style the header background in light mode */
+.light-theme .main-header {
+    background-color: #004687; /* A nice, light indigo/blue */
+    border-bottom-color: #2642b4; /* A slightly darker border */
+}
+
+/* Fix nav link color in light mode */
+.light-theme .main-nav a {
+    color: #f1e6e6; /* Dark gray text for contrast against the light blue */
+}
+
+.light-theme .main-nav a:hover, .light-theme .main-nav a.active {
+    color: var(--primary-blue); /* Use the brand color for hover/active */
+}
+
+/* NEW: Style the header search bar for the new background */
+.light-theme .header-search-form {
+    background-color: #fff; /* White background for the search bar */
+    border-color: #c7d2fe;
+}
+.light-theme .header-search-form input,
+.light-theme .header-search-form button {
+    color: #374151; /* Dark text */
+}
+
+/* NEW: Style the dropdown button for the new background */
+.light-theme .dropdown-toggle {
+    color: #f1e6e6; /* Even darker text for the user name */
+}
+
+#toast-container {
+    position: fixed;
+    bottom: 20px; /* Position at the bottom-right */
+    right: 20px;
+    z-index: 10000;
+    display: flex;
+    flex-direction: column-reverse; /* New toasts appear on top */
+    gap: 1rem;
+    width: 350px;
+}
+
+.toast {
+    background-color: var(--card-bg);
+    color: var(--text-primary);
+    padding: 1rem;
+    border-radius: 8px;
+    /* Use a subtle left border for accent */
+    border-left: 4px solid var(--primary-blue);
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2), 0 6px 6px rgba(0, 0, 0, 0.2);
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    opacity: 0;
+    transform: translateX(120%);
+    transition: transform 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275), opacity 0.5s ease;
+    overflow: hidden; /* Important for the progress bar */
+    position: relative; /* Also for the progress bar */
+}
+
+.toast.show {
+    opacity: 1;
+    transform: translateX(0);
+}
+
+.toast-icon {
+    font-size: 1.5rem;
+    flex-shrink: 0; /* Prevent icon from shrinking */
+}
+
+.toast-message {
+    font-size: 0.9rem;
+    font-weight: 500;
+    line-height: 1.4;
+}
+
+/* Accent colors for different types */
+.toast[data-toast-type="success"] {
+    border-left-color: #4ade80;
+}
+.toast[data-toast-type="error"] {
+    border-left-color: #f87171;
+}
+.toast[data-toast-type="success"] .toast-icon {
+    color: #4ade80;
+}
+.toast[data-toast-type="error"] .toast-icon {
+    color: #f87171;
+}
+
+/* The Progress Bar */
+.toast-progress {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    height: 4px;
+    width: 100%;
+    background-color: var(--primary-blue);
+    animation: toastProgress linear forwards;
+}
+.toast[data-toast-type="success"] .toast-progress {
+    background-color: #4ade80;
+}
+.toast[data-toast-type="error"] .toast-progress {
+    background-color: #f87171;
+}
+
+
+/* Light theme override */
+.light-theme .toast {
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.05), 0 6px 6px rgba(0, 0, 0, 0.07);
+}
+
+
+@keyframes toastProgress {
+    from {
+        width: 100%;
+    }
+    to {
+        width: 0%;
+    }
+}
+
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.7);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 9990; /* High z-index, but below toasts */
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.modal-overlay:not(.hidden) {
+    opacity: 1;
+}
+
+.modal-overlay.hidden {
+    display: none;
+}
+
+.modal-content {
+    background-color: var(--card-bg);
+    padding: 2rem;
+    border-radius: 12px;
+    border: 1px solid var(--border-color);
+    width: 90%;
+    max-width: 450px;
+    position: relative;
+    text-align: center;
+}
+
+.modal-header {
+    margin-bottom: 1rem;
+}
+
+.modal-header h3 {
+    font-size: 1.5rem;
+    margin: 0;
+}
+
+.modal-body p {
+    color: var(--text-secondary);
+    line-height: 1.6;
+    margin-bottom: 2rem;
+}
+
+.modal-close-btn {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    background: none;
+    border: none;
+    color: var(--text-secondary);
+    font-size: 2rem;
+    cursor: pointer;
+    line-height: 1;
+}
+
+.modal-actions {
+    display: flex;
+    justify-content: center;
+    gap: 1rem;
+}
+
 /* --- THIS IS THE NEW, FIXED BLOCK --- */
+
+@media (min-width: 1281px) {
+    .welcome-text {
+        display: inline; /* Show "Welcome, " ONLY on screens wider than 1280px */
+    }
+}
 
 @media (max-width: 1280px) {
     /* Hide the desktop nav links and the main auth container */
@@ -781,7 +1050,7 @@ body.mobile-menu-open {
         max-width: 300px;
         height: 100vh;
         background-color: var(--card-bg);
-        z-index: 1005; /* CRITICAL: Menu is on top */
+        z-index: 9999; /* <<< THE DEFINITIVE FIX: Extremely high z-index */
         transition: transform 0.3s ease-in-out;
         padding-top: 5rem;
         box-shadow: -5px 0 15px rgba(0,0,0,0.2);
@@ -795,9 +1064,28 @@ body.mobile-menu-open {
         gap: 1rem;
     }
     
+    /* Show and style the mobile auth links */
+    #mobile-auth-container {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 1rem;
+        margin-top: 1rem;
+        padding-top: 1rem;
+        width: 100%;
+    }
+    #mobile-auth-container hr {
+        width: 80%;
+        border-color: var(--border-color);
+    }
+    #mobile-auth-container a {
+        color: var(--text-secondary);
+        font-weight: 500;
+    }
+    
     /* Ensure the overlay is BEHIND the menu */
     .mobile-menu-overlay {
-        z-index: 1000; /* Lower z-index than the nav panel */
+        z-index: 9998; /* <<< THE DEFINITIVE FIX: High, but lower than the menu */
     }
 }
 

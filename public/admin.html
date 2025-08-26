@@ -1,26 +1,45 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
+  <head>
+    <meta charset="UTF-8" />
     <!-- THIS LINE IS THE CRITICAL FIX -->
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Admin Dashboard - DRE Computers</title>
-    <link rel="stylesheet" href="assets/css/base.css">
-    <link rel="stylesheet" href="assets/css/components.css">
-    <link rel="stylesheet" href="assets/css/admin.css">
+    <link rel="stylesheet" href="assets/css/base.css" />
+    <link rel="stylesheet" href="assets/css/components.css" />
+    <link rel="stylesheet" href="assets/css/admin.css" />
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-</head>
-<body class="admin-page">
-
+    <script>
+      (function () {
+        try {
+          var theme = localStorage.getItem("theme");
+          if (theme === "light") {
+            document.documentElement.classList.add("light-theme");
+          }
+        } catch (e) {}
+      })();
+    </script>
+  </head>
+  <body class="admin-page">
     <!-- The navigation placeholder is a direct child of the body -->
     <div id="admin-nav-placeholder"></div>
 
     <!-- The main content area is its sibling -->
     <div class="admin-main-content">
-         <h1 class="section-title" style="text-align: left;">Dashboard</h1>
-         <p>Welcome to the admin panel. Use the navigation on the left to manage your store.</p>
+      <h1 class="section-title" style="text-align: left">Dashboard</h1>
+      <p>
+        Welcome to the admin panel. Use the navigation on the left to manage
+        your store.
+      </p>
     </div>
 
     <script src="assets/js/admin.js"></script>
-</body>
+    <div class="modal-overlay hidden" id="generic-modal-overlay">
+      <div class="modal-content" id="generic-modal-content">
+        <!-- Modal content will be injected here by JS -->
+      </div>
+    </div>
+
+    <div id="toast-container"></div>
+  </body>
 </html>
