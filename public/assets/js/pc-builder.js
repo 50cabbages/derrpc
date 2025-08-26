@@ -33,7 +33,6 @@ document.addEventListener("DOMContentLoaded", async () => {
     const savedBuild = localStorage.getItem(STORAGE_KEY);
     if (savedBuild) {
       currentBuild = JSON.parse(savedBuild);
-      // Re-establish compatibility from loaded components
       if (currentBuild.CPUs)
         compatibility.cpu_socket_id = currentBuild.CPUs.cpu_socket_id;
       if (currentBuild.Motherboards)
@@ -236,7 +235,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     }
   });
 
-  addToCartBtn.addEventListener("click", () => {
+  addToCartBtn.addEventListener("click", async () => {
     let totalPrice = 0;
     for (const category in currentBuild) {
       if (currentBuild[category])
@@ -247,14 +246,14 @@ document.addEventListener("DOMContentLoaded", async () => {
       id: `build-${Date.now()}`,
       name: "Custom PC Build",
       price: totalPrice,
+      // Use the placeholder image for PC builds
       image: currentBuild.Casings
         ? currentBuild.Casings.image
-        : "https://via.placeholder.com/100.png",
+        : "https://sqpfjdookptzlzkqtmlw.supabase.co/storage/v1/object/public/assets/pc_build_placeholder.png",
     };
-    cart.addItem(buildAsCartItem);
+    await cart.addItem(buildAsCartItem);
     updateCartUI();
     toggleCartPanel();
-    // Clear storage after adding to cart
     localStorage.removeItem(STORAGE_KEY);
     currentBuild = { ...initialBuildState };
     updateUI();

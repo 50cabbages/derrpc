@@ -1,5 +1,3 @@
-// api/server.js
-
 const express = require('express');
 const path = require('path');
 const cors = require('cors');
@@ -7,13 +5,13 @@ const cookieParser = require('cookie-parser');
 require('dotenv').config({ path: path.resolve(__dirname, '../.env') });
 const { createClient } = require('@supabase/supabase-js');
 
-// Import the routers
-const authRouter = require('./routes/auth');
-const profileRouter = require('./routes/profile');
+const authRouter = require('./routes/auth'); 
+const profileRouter = require('./routes/profile'); 
 const ordersRouter = require('./routes/orders');
 const adminRouter = require('./routes/admin');
-const packagesRouter = require('./routes/packages'); // This router is imported but not used in server.js, might be a leftover or intended for future use in admin part
+const packagesRouter = require('./routes/packages');
 const builderRouter = require('./routes/builder');
+const cartRouter = require('./routes/cart');
 
 const supabaseUrl = process.env.SUPABASE_URL;
 const supabaseAnonKey = process.env.SUPABASE_ANON_KEY;
@@ -36,20 +34,17 @@ const supabaseAdmin = createClient(supabaseUrl, supabaseServiceKey, {
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// --- MIDDLEWARE ---
 app.use(cors());
 app.use(cookieParser());
 app.use(express.json());
 app.use(express.static(path.join(__dirname, '../public')));
-
-// --- API ROUTES ---
 
 app.use('/api/auth', authRouter(supabase));
 app.use('/api/profile', profileRouter(supabaseAdmin));
 app.use('/api/orders', ordersRouter(supabaseAdmin));
 app.use('/api/admin', adminRouter(supabaseAdmin));
 app.use('/api/builder', builderRouter(supabase));
-
+app.use('/api/cart', cartRouter(supabaseUrl, supabaseAnonKey));
 
 app.get('/api/config', (req, res) => {
     res.json({
@@ -72,7 +67,6 @@ app.get('/api/products', async (req, res) => {
         .from('products')
         .select('*, brands(name)');
     
-    // --- Apply Filters on the Backend ---
     const { category, brand_id, sort } = req.query;
     if (category) {
         countQuery = countQuery.eq('category', category);
@@ -83,18 +77,16 @@ app.get('/api/products', async (req, res) => {
         dataQuery = dataQuery.eq('brand_id', brand_id);
     }
     
-    // --- Apply Sorting on the Backend (FIXED) ---
-    // Now we sort by the pre-computed 'effective_price' column
     if (sort === 'price-asc') {
-        dataQuery = dataQuery.order('effective_price', { ascending: true });
+        dataQuery = dataQuery
+            .order('effective_price', { ascending: true });
     } else if (sort === 'price-desc') {
-        dataQuery = dataQuery.order('effective_price', { ascending: false });
+        dataQuery = dataQuery
+            .order('effective_price', { ascending: false });
     } else {
-        // Default sort if no specific price sort is requested
-        dataQuery = dataQuery.order('id', { ascending: true }); 
+        dataQuery = dataQuery.order('id', { ascending: true });
     }
 
-    // Apply range after all filters and orders have been applied
     dataQuery = dataQuery.range(from, to);
 
     try {
@@ -174,7 +166,6 @@ app.get('/api/products/:id', async (req, res) => {
     res.json(data);
 });
 
-// --- CATCH-ALL ROUTE ---
 app.get('*', (req, res) => {
     res.sendFile(path.join(__dirname, '../public/index.html'));
 });

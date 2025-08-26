@@ -212,8 +212,9 @@ function renderCartItems() {
         (item) => `
             <div class="cart-item" data-product-id="${item.id}">
                 <img src="${
-                  item.image ||
-                  "https://via.placeholder.com/100x100.png?text=No+Image"
+                  item.id.toString().startsWith('build-') || item.id.toString().startsWith('pkg-') 
+                    ? item.image || "https://sqpfjdookptzlzkqtmlw.supabase.co/storage/v1/object/public/assets/pc_build_placeholder.png"
+                    : item.image || "https://via.placeholder.com/100x100.png?text=No+Image"
                 }" alt="${item.name}" class="cart-item-image">
                 <div class="cart-item-details">
                     <p class="cart-item-title">${item.name}</p>
@@ -261,10 +262,13 @@ function toggleCartPanel() {
   }
 }
 
-function updateAuthUI(user) {
+async function updateAuthUI(session) {
     const loginBtn = document.getElementById('login-btn');
     const userInfo = document.getElementById('user-info');
     const mobileAuthContainer = document.getElementById('mobile-auth-container');
+
+    const user = session?.user || null;
+    const accessToken = session?.access_token || null;
 
     if (mobileAuthContainer) mobileAuthContainer.innerHTML = '';
 
@@ -297,6 +301,8 @@ function updateAuthUI(user) {
             `;
         }
     }
+    await cart.init(supabase, user, accessToken);
+    updateCartUI();
 }
 
 document.addEventListener("DOMContentLoaded", async () => {
@@ -327,6 +333,10 @@ document.addEventListener("DOMContentLoaded", async () => {
         loadComponent("_footer.html", "footer-placeholder")
     ]);
 
+    const { data: { session } } = await supabase.auth.getSession();
+    await updateAuthUI(session || null);
+    updateCartUI();
+
     const mobileMenuBtn = document.getElementById("mobile-menu-btn");
     const mainNav = document.getElementById("main-nav-links");
     const dropdownBtn = document.getElementById('user-dropdown-btn');
@@ -347,7 +357,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     };
     applyTheme(localStorage.getItem('theme'));
 
-    document.addEventListener('click', function(event) {
+    document.addEventListener('click', async function(event) {
         const target = event.target;
         
         if (mobileMenuBtn?.contains(target)) {
@@ -392,7 +402,7 @@ document.addEventListener("DOMContentLoaded", async () => {
         }
         
         if (target.id === 'modal-confirm-logout-btn') {
-            performLogout();
+            await performLogout();
             hideModal();
         }
         if (target.id === 'modal-cancel-btn' || target.id === 'modal-close-btn') {
@@ -409,27 +419,46 @@ document.addEventListener("DOMContentLoaded", async () => {
                 price: parseFloat(target.dataset.productPrice),
                 image: target.dataset.productImage,
             };
-            cart.addItem(product);
+            await cart.addItem(product);
             updateCartUI();
-            showToast(`${product.name} added to cart!`);
         }
         
-        const cartItem = target.closest(".cart-item");
-        if (cartItem) {
-            let productId = cartItem.dataset.productId;
-            if (!isNaN(productId) && !isNaN(parseFloat(productId))) {
-                productId = parseInt(productId, 10);
-            }
-            const currentItem = cart.getItems().find((i) => i.id === productId);
-            const currentQuantity = currentItem?.quantity || 0;
+        const cartItemElement = target.closest(".cart-item"); 
+        if (cartItemElement) {
+            let productId = cartItemElement.dataset.productId; 
+            
             if (target.classList.contains("quantity-increase")) {
-                cart.updateItemQuantity(productId, currentQuantity + 1);
+                const currentInput = cartItemElement.querySelector('input[type="number"]');
+                const newQuantity = parseInt(currentInput.value, 10) + 1;
+                await cart.updateItemQuantity(productId, newQuantity);
             } else if (target.classList.contains("quantity-decrease")) {
-                cart.updateItemQuantity(productId, currentQuantity - 1);
+                const currentInput = cartItemElement.querySelector('input[type="number"]');
+                const newQuantity = parseInt(currentInput.value, 10) - 1;
+                await cart.updateItemQuantity(productId, newQuantity);
             } else if (target.classList.contains("cart-item-remove-btn")) {
-                cart.removeItem(productId);
+                await cart.removeItem(productId);
             }
             updateCartUI();
+        }
+        
+        if (target.classList.contains("add-package-to-cart-btn")) {
+            const packageId = Number(event.target.dataset.packageId);
+            const packagesResponse = await fetch('/api/packages');
+            const allPackages = await packagesResponse.json();
+            const selectedPackage = allPackages.find(p => p.id === packageId); 
+            
+            if (selectedPackage) {
+                const packageAsCartItem = {
+                    id: `pkg-${selectedPackage.id}`,
+                    name: `${selectedPackage.name} (Package)`,
+                    price: selectedPackage.price_complete,
+                    image: selectedPackage.image_url,
+                };
+                await cart.addItem(packageAsCartItem);
+                updateCartUI();
+                hideModal();
+                toggleCartPanel();
+            }
         }
     });
 
@@ -450,7 +479,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 
     if (supabase) {
         supabase.auth.onAuthStateChange(async (_event, session) => {
-            updateAuthUI(session?.user || null);
+            await updateAuthUI(session || null);
             if (session) {
                 const { data } = await supabase.from("profiles").select("role").eq("id", session.user.id).single();
                 if (data && data.role === "admin" && !window.location.pathname.startsWith("/admin")) {
@@ -459,8 +488,6 @@ document.addEventListener("DOMContentLoaded", async () => {
             }
         });
     }
-
-    updateCartUI();
 
     const path = window.location.pathname;
     
@@ -510,18 +537,36 @@ document.addEventListener("DOMContentLoaded", async () => {
             .filter(Boolean)
             .join(", ");
 
+        // Separate items for display purposes on checkout page
+        const realProducts = cartItems.filter(item => typeof item.id === 'number');
+        const virtualProducts = cartItems.filter(item => typeof item.id === 'string');
+
+
         checkoutContent.innerHTML = `
                 <h3>Order Summary</h3>
                 <ul>
-                    ${cartItems
+                    ${realProducts
                         .map(
                             (item) =>
-                                `<li>${item.name} (x${
-                                    item.quantity
-                                }) - ${new Intl.NumberFormat("en-PH", {
+                                `<li>
+                                    <img src="${item.image || 'https://via.placeholder.com/20.png'}" alt="${item.name}" style="width:20px;height:20px;object-fit:contain;vertical-align:middle;margin-right:5px;border-radius:3px;">
+                                    ${item.name} (x${item.quantity}) - ${new Intl.NumberFormat("en-PH", {
                                     style: "currency",
                                     currency: "PHP",
-                                }).format(item.price * item.quantity)}</li>`
+                                }).format(item.price * item.quantity)}
+                                </li>`
+                        )
+                        .join("")}
+                    ${virtualProducts
+                        .map(
+                            (item) =>
+                                `<li>
+                                    <img src="${item.image || 'https://sqpfjdookptzlzkqtmlw.supabase.co/storage/v1/object/public/assets/pc_build_placeholder.png'}" alt="${item.name}" style="width:20px;height:20px;object-fit:contain;vertical-align:middle;margin-right:5px;border-radius:3px;">
+                                    ${item.name} (x${item.quantity}) - ${new Intl.NumberFormat("en-PH", {
+                                    style: "currency",
+                                    currency: "PHP",
+                                }).format(item.price * item.quantity)}
+                                </li>`
                         )
                         .join("")}
                 </ul>
@@ -558,7 +603,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 
                 if (orderResponse.ok) {
                     const result = await orderResponse.json();
-                    cart.clearCart();
+                    await cart.clearCart();
                     updateCartUI();
                     window.location.href = `/order-success.html?orderId=${result.order.id}`;
                 } else {
@@ -848,13 +893,24 @@ document.addEventListener("DOMContentLoaded", async () => {
             });
         });
         const quantityInput = contentDiv.querySelector('.quantity-selector input');
-        contentDiv.querySelector('.quantity-minus')?.addEventListener('click', () => {
+        contentDiv.querySelector('.quantity-minus')?.addEventListener('click', async () => {
             let currentVal = parseInt(quantityInput.value);
-            if (currentVal > 1) quantityInput.value = currentVal - 1;
+            if (currentVal > 1) {
+                const newQuantity = currentVal - 1;
+                quantityInput.value = newQuantity;
+                await cart.updateItemQuantity(productId, newQuantity); 
+                updateCartUI();
+            }
         });
-        contentDiv.querySelector('.quantity-plus')?.addEventListener('click', () => {
-            let currentVal = parseInt(quantityInput.value);
-            quantityInput.value = currentVal + 1;
+        contentDiv.querySelector('.quantity-plus')?.addEventListener('click', async () => {
+            const productToAddToCart = {
+                id: productId, 
+                name: product.name,
+                price: product.sale_price || product.price,
+                image: product.image || '',
+            };
+            await cart.addItem(productToAddToCart, 1);
+            updateCartUI();
         });
     } else if (path.endsWith("/profile.html")) {
         const form = document.getElementById("profile-form");
@@ -913,7 +969,7 @@ document.addEventListener("DOMContentLoaded", async () => {
                                 <span class="order-status">${order.status}</span>
                             </div>
                             <div class="order-body">
-                                ${order.order_items
+                                ${order.order_items // Real products
                                 .map(
                                     (item) => `
                                     <div class="order-item">
@@ -938,6 +994,31 @@ document.addEventListener("DOMContentLoaded", async () => {
                                 `
                                 )
                                 .join("")}
+                                ${order.virtual_items ? order.virtual_items // Virtual items
+                                .map(
+                                    (item) => `
+                                    <div class="order-item">
+                                        <img src="${
+                                        item.image ||
+                                        'https://sqpfjdookptzlzkqtmlw.supabase.co/storage/v1/object/public/assets/pc_build_placeholder.png'
+                                        }" alt="${
+                                    item.name
+                                    }" class="order-item-image">
+                                        <div class="order-item-details">
+                                            <p>${item.name}</p>
+                                            <p style="font-size: 0.9rem; color: var(--text-secondary);">
+                                                ${
+                                                item.quantity
+                                                } x ${new Intl.NumberFormat("en-PH", {
+                                    style: "currency",
+                                    currency: "PHP",
+                                    }).format(item.price)}
+                                            </p>
+                                        </div>
+                                    </div>
+                                `
+                                )
+                                .join("") : ''}
                             </div>
                             <div class="order-footer">
                                 Total: ${new Intl.NumberFormat("en-PH", {
@@ -1179,7 +1260,7 @@ document.addEventListener("DOMContentLoaded", async () => {
                     </div>
                     ${mainDescriptionHTML}
                     <button class="btn btn-primary add-package-to-cart-btn" data-package-id="${pkg.id}" style="width: 100%; margin-top: 1rem;">Add Complete Set to Cart</button>
-                    ${componentsHTML ? '<h4 style="margin-top: 2rem;">Components</h4>' : ''}
+                    <h4 style="margin-top: 2rem;">Components</h4>
                     <ul class="component-list">
                         ${componentsHTML}
                     </ul>
