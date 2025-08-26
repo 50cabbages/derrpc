@@ -1,0 +1,4 @@
+# DRE RWRK/.gitignore
+
+node_modules
+.env

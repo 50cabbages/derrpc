@@ -3,32 +3,29 @@
 const express = require('express');
 const path = require('path');
 const cors = require('cors');
-const cookieParser = require('cookie-parser'); // Import cookie-parser
+const cookieParser = require('cookie-parser');
 require('dotenv').config({ path: path.resolve(__dirname, '../.env') });
 const { createClient } = require('@supabase/supabase-js');
 
 // Import the routers
-const authRouter = require('./routes/auth'); 
-const profileRouter = require('./routes/profile'); 
+const authRouter = require('./routes/auth');
+const profileRouter = require('./routes/profile');
 const ordersRouter = require('./routes/orders');
 const adminRouter = require('./routes/admin');
-const packagesRouter = require('./routes/packages');
+const packagesRouter = require('./routes/packages'); // This router is imported but not used in server.js, might be a leftover or intended for future use in admin part
 const builderRouter = require('./routes/builder');
 
 const supabaseUrl = process.env.SUPABASE_URL;
 const supabaseAnonKey = process.env.SUPABASE_ANON_KEY;
-const supabaseServiceKey = process.env.SUPABASE_SERVICE_KEY; // <-- Add this line
+const supabaseServiceKey = process.env.SUPABASE_SERVICE_KEY;
 
-// Update the check to include the new service key
 if (!supabaseUrl || !supabaseAnonKey || !supabaseServiceKey) {
     console.error("Error: Supabase URL, Anon Key, or Service Key is missing. Check your root .env file.");
     process.exit(1);
 }
 
-// Public client, safe for browser and basic server tasks
 const supabase = createClient(supabaseUrl, supabaseAnonKey);
 
-// Admin client, for backend use ONLY. Bypasses RLS.
 const supabaseAdmin = createClient(supabaseUrl, supabaseServiceKey, {
     auth: {
         autoRefreshToken: false,
@@ -36,29 +33,24 @@ const supabaseAdmin = createClient(supabaseUrl, supabaseServiceKey, {
     }
 });
 
-
 const app = express();
 const PORT = process.env.PORT || 3000;
 
 // --- MIDDLEWARE ---
 app.use(cors());
-app.use(cookieParser()); // Use cookie-parser middleware
+app.use(cookieParser());
 app.use(express.json());
 app.use(express.static(path.join(__dirname, '../public')));
 
 // --- API ROUTES ---
 
-// The auth router uses the public client, as it deals with user-facing auth flows
 app.use('/api/auth', authRouter(supabase));
-
-// The profile router needs the ADMIN client to create/update profiles on behalf of users
-app.use('/api/profile', profileRouter(supabaseAdmin)); // <-- PASS THE ADMIN CLIENT
+app.use('/api/profile', profileRouter(supabaseAdmin));
 app.use('/api/orders', ordersRouter(supabaseAdmin));
 app.use('/api/admin', adminRouter(supabaseAdmin));
 app.use('/api/builder', builderRouter(supabase));
 
 
-// Endpoint to provide public Supabase keys to the frontend
 app.get('/api/config', (req, res) => {
     res.json({
         supabaseUrl: process.env.SUPABASE_URL,
@@ -66,25 +58,19 @@ app.get('/api/config', (req, res) => {
     });
 });
 
-
-
-// These public data routes can use the standard client
 app.get('/api/products', async (req, res) => {
     const page = parseInt(req.query.page, 10) || 1;
-    const limit = parseInt(req.query.limit, 10) || 10; // Default to 9 items per page
+    const limit = parseInt(req.query.limit, 10) || 10;
     const from = (page - 1) * limit;
     const to = from + limit - 1;
 
-    // Start building the query to get the total count first
     let countQuery = supabase
         .from('products')
         .select('*', { count: 'exact', head: true });
 
-    // Build the main data query
     let dataQuery = supabase
         .from('products')
-        .select('*, brands(name)')
-        .range(from, to);
+        .select('*, brands(name)');
     
     // --- Apply Filters on the Backend ---
     const { category, brand_id, sort } = req.query;
@@ -97,19 +83,26 @@ app.get('/api/products', async (req, res) => {
         dataQuery = dataQuery.eq('brand_id', brand_id);
     }
     
-    // --- Apply Sorting on the Backend ---
-    const sortPrice = 'sale_price.is.null,price'; // Sort by price, handling sale price first
+    // --- Apply Sorting on the Backend (FIXED) ---
+    // Now we sort by the pre-computed 'effective_price' column
     if (sort === 'price-asc') {
-        dataQuery = dataQuery.order(sortPrice, { ascending: true });
+        dataQuery = dataQuery.order('effective_price', { ascending: true });
     } else if (sort === 'price-desc') {
-        dataQuery = dataQuery.order(sortPrice, { ascending: false });
+        dataQuery = dataQuery.order('effective_price', { ascending: false });
+    } else {
+        // Default sort if no specific price sort is requested
+        dataQuery = dataQuery.order('id', { ascending: true }); 
     }
+
+    // Apply range after all filters and orders have been applied
+    dataQuery = dataQuery.range(from, to);
 
     try {
         const { data, error } = await dataQuery;
         const { count, error: countError } = await countQuery;
 
         if (error || countError) {
+            console.error("Supabase query error:", error || countError);
             throw error || countError;
         }
 
@@ -120,6 +113,7 @@ app.get('/api/products', async (req, res) => {
             currentPage: page
         });
     } catch (err) {
+        console.error("API /api/products error:", err);
         res.status(500).json({ error: err.message });
     }
 });
