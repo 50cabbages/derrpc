@@ -40,6 +40,7 @@ function hideModal() {
 }
 
 async function performLogout() {
+  cart.handleLogout(); // <-- THE CRITICAL FIX: Prepare cart for logout state
   await fetch("/api/auth/logout", { method: "POST" });
   const { error } = await supabase.auth.signOut();
   if (error) console.error("Error during client-side logout:", error);
@@ -268,7 +269,6 @@ async function updateAuthUI(session) {
     const mobileAuthContainer = document.getElementById('mobile-auth-container');
 
     const user = session?.user || null;
-    const accessToken = session?.access_token || null;
 
     if (mobileAuthContainer) mobileAuthContainer.innerHTML = '';
 
@@ -301,7 +301,13 @@ async function updateAuthUI(session) {
             `;
         }
     }
-    await cart.init(supabase, user, accessToken);
+    
+    // THE FIX: Enforce a strict, sequential flow to prevent race conditions.
+    // 1. Initialize the cart with the new user state (this syncs localStorage).
+    await cart.init(supabase, user);
+    // 2. AFTER init/sync is done, refresh the internal cart state from the single source of truth.
+    await cart.refresh();
+    // 3. ONLY THEN, update the UI with the final, correct state.
     updateCartUI();
 }
 
@@ -333,21 +339,7 @@ document.addEventListener("DOMContentLoaded", async () => {
         loadComponent("_footer.html", "footer-placeholder")
     ]);
 
-    const { data: { session } } = await supabase.auth.getSession();
-    await updateAuthUI(session || null);
-    updateCartUI();
-
-    const mobileMenuBtn = document.getElementById("mobile-menu-btn");
-    const mainNav = document.getElementById("main-nav-links");
-    const dropdownBtn = document.getElementById('user-dropdown-btn');
-    const dropdownMenu = document.getElementById('user-dropdown-menu');
     const themeToggleBtn = document.getElementById('theme-toggle-btn');
-    
-    const toggleMobileMenu = () => {
-        const isOpen = mainNav.classList.toggle("is-open");
-        document.body.classList.toggle("mobile-menu-open", isOpen);
-    };
-
     const applyTheme = (theme) => {
         if (theme === 'light') {
             document.documentElement.classList.add('light-theme');
@@ -357,17 +349,24 @@ document.addEventListener("DOMContentLoaded", async () => {
     };
     applyTheme(localStorage.getItem('theme'));
 
+    // --- Main Click Handler ---
     document.addEventListener('click', async function(event) {
         const target = event.target;
-        
-        if (mobileMenuBtn?.contains(target)) {
-            toggleMobileMenu();
-        }
+        const mobileMenuBtn = document.getElementById("mobile-menu-btn");
+        const mainNav = document.getElementById("main-nav-links");
+        const dropdownBtn = document.getElementById('user-dropdown-btn');
+        const dropdownMenu = document.getElementById('user-dropdown-menu');
 
-        if (mainNav?.classList.contains('is-open') && !mainNav.contains(target) && !mobileMenuBtn.contains(target)) {
-            toggleMobileMenu();
+        // Mobile Menu Toggle
+        if (mobileMenuBtn?.contains(target)) {
+            const isOpen = mainNav.classList.toggle("is-open");
+            document.body.classList.toggle("mobile-menu-open", isOpen);
+        } else if (mainNav?.classList.contains('is-open') && !mainNav.contains(target)) {
+            mainNav.classList.remove("is-open");
+            document.body.classList.remove("mobile-menu-open");
         }
         
+        // User Dropdown Menu
         if (dropdownBtn?.contains(target)) {
             event.stopPropagation();
             dropdownMenu.classList.toggle('active');
@@ -375,21 +374,23 @@ document.addEventListener("DOMContentLoaded", async () => {
             dropdownMenu.classList.remove('active');
         }
         
+        // Theme Toggle
         if (target.id === 'theme-toggle-btn') {
             event.preventDefault();
-            const isLight = document.documentElement.classList.contains('light-theme');
-            const newTheme = isLight ? 'dark' : 'light';
+            const newTheme = document.documentElement.classList.contains('light-theme') ? 'dark' : 'light';
             localStorage.setItem('theme', newTheme);
             applyTheme(newTheme);
         }
 
+        // Cart Panel Toggle
         if (target.closest('#cart-btn') || target.closest('#close-cart-btn') || target.closest('#cart-overlay')) {
             toggleCartPanel();
         }
 
+        // Logout Modal
         if (target.id === 'logout-btn' || target.id === 'mobile-logout-btn') {
             event.preventDefault();
-            const logoutModalContent = `
+            showModal(`
                 <button class="modal-close-btn" id="modal-close-btn">&times;</button>
                 <div class="modal-header"><h3>Confirm Logout</h3></div>
                 <div class="modal-body"><p>Are you sure you want to log out?</p></div>
@@ -397,22 +398,23 @@ document.addEventListener("DOMContentLoaded", async () => {
                     <button class="btn btn-outline" id="modal-cancel-btn">No, Cancel</button>
                     <button class="btn btn-primary" id="modal-confirm-logout-btn">Yes, Logout</button>
                 </div>
-            `;
-            showModal(logoutModalContent);
+            `);
         }
         
+        // Modal Actions
         if (target.id === 'modal-confirm-logout-btn') {
             await performLogout();
             hideModal();
         }
-        if (target.id === 'modal-cancel-btn' || target.id === 'modal-close-btn') {
-            hideModal();
-        }
-        if (modalOverlay && event.target === modalOverlay) {
+        if (target.id === 'modal-cancel-btn' || target.id === 'modal-close-btn' || event.target === modalOverlay) {
             hideModal();
         }
 
+        // --- THE NEW, CONSOLIDATED CART ACTION LOGIC ---
+        let cartActionTaken = false;
+
         if (target.classList.contains("add-to-cart-btn")) {
+            cartActionTaken = true;
             const product = {
                 id: parseInt(target.dataset.productId),
                 name: target.dataset.productName,
@@ -420,28 +422,27 @@ document.addEventListener("DOMContentLoaded", async () => {
                 image: target.dataset.productImage,
             };
             await cart.addItem(product);
-            updateCartUI();
         }
         
-        const cartItemElement = target.closest(".cart-item"); 
+        const cartItemElement = target.closest(".cart-item");
         if (cartItemElement) {
-            let productId = cartItemElement.dataset.productId; 
-            
+            cartActionTaken = true;
+            const productIdStr = cartItemElement.dataset.productId;
+            // Determine if ID is numeric or string (for packages/builds)
+            const productId = isNaN(parseInt(productIdStr)) ? productIdStr : parseInt(productIdStr);
+            const currentQuantity = parseInt(cartItemElement.querySelector('input[type="number"]').value, 10);
+
             if (target.classList.contains("quantity-increase")) {
-                const currentInput = cartItemElement.querySelector('input[type="number"]');
-                const newQuantity = parseInt(currentInput.value, 10) + 1;
-                await cart.updateItemQuantity(productId, newQuantity);
+                await cart.updateItemQuantity(productId, currentQuantity + 1);
             } else if (target.classList.contains("quantity-decrease")) {
-                const currentInput = cartItemElement.querySelector('input[type="number"]');
-                const newQuantity = parseInt(currentInput.value, 10) - 1;
-                await cart.updateItemQuantity(productId, newQuantity);
+                await cart.updateItemQuantity(productId, currentQuantity - 1);
             } else if (target.classList.contains("cart-item-remove-btn")) {
                 await cart.removeItem(productId);
             }
-            updateCartUI();
         }
         
         if (target.classList.contains("add-package-to-cart-btn")) {
+            cartActionTaken = true;
             const packageId = Number(event.target.dataset.packageId);
             const packagesResponse = await fetch('/api/packages');
             const allPackages = await packagesResponse.json();
@@ -455,30 +456,34 @@ document.addEventListener("DOMContentLoaded", async () => {
                     image: selectedPackage.image_url,
                 };
                 await cart.addItem(packageAsCartItem);
-                updateCartUI();
                 hideModal();
                 toggleCartPanel();
             }
         }
+        
+        // If any cart action was taken, refresh state from server and re-render UI
+        if (cartActionTaken) {
+            await cart.refresh();
+            updateCartUI();
+        }
     });
 
+    // --- Search Forms ---
     document.getElementById("header-search-form")?.addEventListener("submit", (e) => {
         e.preventDefault();
         const searchTerm = e.target.elements.q.value;
-        if (searchTerm) {
-            window.location.href = `/search-results.html?q=${encodeURIComponent(searchTerm)}`;
-        }
+        if (searchTerm) window.location.href = `/search-results.html?q=${encodeURIComponent(searchTerm)}`;
     });
     document.getElementById("hero-search-form")?.addEventListener("submit", (e) => {
         e.preventDefault();
         const searchTerm = e.target.elements.q.value;
-        if (searchTerm) {
-            window.location.href = `/search-results.html?q=${encodeURIComponent(searchTerm)}`;
-        }
+        if (searchTerm) window.location.href = `/search-results.html?q=${encodeURIComponent(searchTerm)}`;
     });
 
+    // --- Auth State Change Listener (SINGLE SOURCE OF TRUTH) ---
     if (supabase) {
         supabase.auth.onAuthStateChange(async (_event, session) => {
+            console.log("Auth state changed, updating UI and cart.");
             await updateAuthUI(session || null);
             if (session) {
                 const { data } = await supabase.from("profiles").select("role").eq("id", session.user.id).single();
@@ -489,8 +494,11 @@ document.addEventListener("DOMContentLoaded", async () => {
         });
     }
 
+    // --- Page-Specific Logic ---
     const path = window.location.pathname;
     
+    // (The rest of your page-specific logic like /checkout.html, /index.html, /products.html, etc. remains exactly the same)
+
     if (path.endsWith("/checkout.html")) {
         const checkoutContent = document.getElementById("checkout-content");
         const { data: { session } } = await supabase.auth.getSession();
@@ -604,6 +612,7 @@ document.addEventListener("DOMContentLoaded", async () => {
                 if (orderResponse.ok) {
                     const result = await orderResponse.json();
                     await cart.clearCart();
+                    await cart.refresh();
                     updateCartUI();
                     window.location.href = `/order-success.html?orderId=${result.order.id}`;
                 } else {
@@ -899,6 +908,7 @@ document.addEventListener("DOMContentLoaded", async () => {
                 const newQuantity = currentVal - 1;
                 quantityInput.value = newQuantity;
                 await cart.updateItemQuantity(productId, newQuantity); 
+                await cart.refresh();
                 updateCartUI();
             }
         });
@@ -910,6 +920,7 @@ document.addEventListener("DOMContentLoaded", async () => {
                 image: product.image || '',
             };
             await cart.addItem(productToAddToCart, 1);
+            await cart.refresh();
             updateCartUI();
         });
     } else if (path.endsWith("/profile.html")) {
@@ -1195,22 +1206,6 @@ document.addEventListener("DOMContentLoaded", async () => {
             ) {
                 closeModal();
             }
-            if (e.target.classList.contains("add-package-to-cart-btn")) {
-                const packageId = Number(e.target.dataset.packageId);
-                const selectedPackage = packages.find((p) => p.id === packageId);
-                if (selectedPackage) {
-                    const packageAsCartItem = {
-                        id: `pkg-${selectedPackage.id}`,
-                        name: `${selectedPackage.name} (Package)`,
-                        price: selectedPackage.price_complete,
-                        image: selectedPackage.image_url,
-                    };
-                    cart.addItem(packageAsCartItem);
-                    updateCartUI();
-                    closeModal();
-                    toggleCartPanel();
-                }
-            }
         });
     } else if (path.endsWith('/package-detail.html')) {
         const contentDiv = document.getElementById('package-detail-content');
@@ -1267,18 +1262,5 @@ document.addEventListener("DOMContentLoaded", async () => {
                 </div>
             </div>
         `;
-        contentDiv.addEventListener('click', e => {
-            if (e.target.classList.contains('add-package-to-cart-btn')) {
-                const packageAsCartItem = {
-                    id: `pkg-${pkg.id}`,
-                    name: `${pkg.name} (Package)`,
-                    price: pkg.price_complete,
-                    image: pkg.image_url,
-                };
-                cart.addItem(packageAsCartItem);
-                updateCartUI();
-                toggleCartPanel();
-            }
-        });
     }
 });

@@ -4,204 +4,180 @@ const { createClient } = require('@supabase/supabase-js');
 
 module.exports = function(supabaseUrl, supabaseAnonKey) {
 
+    // Middleware to create a user-specific Supabase client
     const isAuthenticated = async (req, res, next) => {
-        if (!req.headers.authorization) {
+        const accessToken = req.headers.authorization?.split(' ')[1];
+        if (!accessToken) {
             return res.status(401).json({ error: 'No authorization header provided.' });
         }
-        const accessToken = req.headers.authorization.split(' ')[1];
         
+        // Use a temporary client to get the user
         const anonClient = createClient(supabaseUrl, supabaseAnonKey);
         const { data: { user }, error: authError } = await anonClient.auth.getUser(accessToken);
 
         if (authError || !user) {
-            console.error('Authentication failed in isAuthenticated:', authError?.message || 'No user', { accessToken });
             return res.status(401).json({ error: 'User not authenticated or session invalid.' });
         }
 
         req.user = user;
-        req.accessToken = accessToken;
-
+        // Create a Supabase client authenticated as the user for RLS
         req.supabase = createClient(supabaseUrl, supabaseAnonKey, {
-            global: {
-                headers: {
-                    Authorization: `Bearer ${accessToken}`
-                }
-            }
+            global: { headers: { Authorization: `Bearer ${accessToken}` } }
         });
         next();
     };
 
+    // GET /api/cart - Fetches the user's complete cart
     router.get('/', isAuthenticated, async (req, res) => {
-        const { user, supabase: requestSupabase } = req;
+        const { supabase: requestSupabase } = req;
 
         const { data, error } = await requestSupabase
             .from('cart_items')
             .select(`
-                product_id,
                 quantity,
-                products (
-                    name,
-                    image,
-                    price,
-                    sale_price,
-                    effective_price
-                )
-            `)
-            .eq('user_id', user.id);
+                product_id,
+                products ( name, image, price, sale_price, effective_price ),
+                virtual_item_id,
+                virtual_item_name,
+                virtual_item_price,
+                virtual_item_image
+            `);
 
         if (error) {
             console.error('Error fetching cart:', error);
             return res.status(500).json({ error: error.message });
         }
 
-        const cartItems = data.map(item => ({
-            id: item.product_id,
-            name: item.products.name,
-            image: item.products.image,
-            price: item.products.effective_price,
-            quantity: item.quantity
-        }));
+        // Map the mixed data into a consistent format for the frontend
+        const cartItems = data.map(item => {
+            if (item.product_id) { // It's a real product
+                return {
+                    id: item.product_id,
+                    name: item.products.name,
+                    image: item.products.image,
+                    price: item.products.effective_price,
+                    quantity: item.quantity
+                };
+            } else { // It's a virtual item
+                return {
+                    id: item.virtual_item_id,
+                    name: item.virtual_item_name,
+                    image: item.virtual_item_image,
+                    price: item.virtual_item_price,
+                    quantity: item.quantity
+                };
+            }
+        });
 
         res.json(cartItems);
     });
 
+    // POST /api/cart - Adds or updates an item in the cart
     router.post('/', isAuthenticated, async (req, res) => {
         const { user, supabase: requestSupabase } = req;
-        const { productId, quantity = 1 } = req.body;
+        const { item } = req.body; // Expect a full item object now
 
-        if (!productId || quantity <= 0) {
-            return res.status(400).json({ error: 'Product ID and a positive quantity are required.' });
+        if (!item || !item.id || !item.quantity) {
+            return res.status(400).json({ error: 'A valid item object with id and quantity is required.' });
         }
+
+        const isRealProduct = typeof item.id === 'number';
 
         const { data: existingItem, error: fetchError } = await requestSupabase
             .from('cart_items')
-            .select('id, quantity, user_id')
-            .eq('user_id', user.id)
-            .eq('product_id', productId)
+            .select('id, quantity')
+            .eq(isRealProduct ? 'product_id' : 'virtual_item_id', item.id)
             .single();
 
-        if (fetchError && fetchError.code !== 'PGRST116') {
-            console.error('Error checking existing cart item:', fetchError);
-            return res.status(500).json({ error: 'Failed to check cart item.' });
+        if (fetchError && fetchError.code !== 'PGRST116') { // PGRST116 means 'not found', which is fine
+            return res.status(500).json({ error: 'Failed to check for existing cart item.' });
         }
 
         let resultData, resultError;
 
         if (existingItem) {
-            if (existingItem.user_id !== user.id) {
-                console.warn(`Potential RLS bypass attempt: User ${user.id} tried to modify item ${existingItem.id} owned by ${existingItem.user_id}`);
-                return res.status(403).json({ error: 'Forbidden: You do not own this cart item.' });
-            }
-
-            const newQuantity = existingItem.quantity + quantity;
+            // Item exists, update its quantity
+            const newQuantity = existingItem.quantity + item.quantity;
             ({ data: resultData, error: resultError } = await requestSupabase
                 .from('cart_items')
                 .update({ quantity: newQuantity })
                 .eq('id', existingItem.id)
-                .eq('user_id', user.id)
                 .select()
                 .single());
         } else {
+            // Item does not exist, insert it
+            const itemToInsert = {
+                user_id: user.id,
+                quantity: item.quantity,
+            };
+            if (isRealProduct) {
+                itemToInsert.product_id = item.id;
+            } else {
+                itemToInsert.virtual_item_id = item.id;
+                itemToInsert.virtual_item_name = item.name;
+                itemToInsert.virtual_item_price = item.price;
+                itemToInsert.virtual_item_image = item.image;
+            }
             ({ data: resultData, error: resultError } = await requestSupabase
                 .from('cart_items')
-                .insert({ user_id: user.id, product_id: productId, quantity })
+                .insert(itemToInsert)
                 .select()
                 .single());
         }
 
         if (resultError) {
             console.error('Error adding/updating cart item:', resultError);
-            if (resultError.message && resultError.message.includes('row-level security policy')) {
-                console.error('RLS violation details during POST:', { userId: user.id, productId, quantity, isExisting: !!existingItem });
-            }
             return res.status(500).json({ error: 'Failed to add/update cart item.', details: resultError.message });
         }
 
-        res.status(200).json({ message: 'Cart item updated successfully!', cartItem: resultData });
+        res.status(200).json({ message: 'Cart updated successfully!', cartItem: resultData });
     });
 
-    router.put('/:productId', isAuthenticated, async (req, res) => {
-        const { user, supabase: requestSupabase } = req;
-        const productId = parseInt(req.params.productId, 10);
+    // PUT /api/cart/:itemId - Updates an item's quantity
+    router.put('/:itemId', isAuthenticated, async (req, res) => {
+        const { supabase: requestSupabase } = req;
+        const { itemId } = req.params;
         const { quantity } = req.body;
+        
+        const isRealProduct = !isNaN(parseInt(itemId));
+        const id = isRealProduct ? parseInt(itemId) : itemId;
 
-        if (isNaN(productId) || quantity === undefined || quantity < 0) {
-            return res.status(400).json({ error: 'Product ID and a valid quantity (0 or more) are required.' });
+        if (quantity <= 0) { // Let's use DELETE for removal
+            return res.status(400).json({ error: 'Quantity must be positive. Use DELETE to remove.' });
         }
 
-        if (quantity === 0) {
-            const { error } = await requestSupabase
-                .from('cart_items')
-                .delete()
-                .eq('user_id', user.id)
-                .eq('product_id', productId);
+        const { data, error } = await requestSupabase
+            .from('cart_items')
+            .update({ quantity })
+            .eq(isRealProduct ? 'product_id' : 'virtual_item_id', id)
+            .select();
 
-            if (error) {
-                console.error('Error deleting cart item:', error);
-                return res.status(500).json({ error: 'Failed to remove cart item.' });
-            }
-            return res.status(200).json({ message: 'Cart item removed successfully.' });
-        } else {
-            const { data, error } = await requestSupabase
-                .from('cart_items')
-                .update({ quantity })
-                .eq('user_id', user.id)
-                .eq('product_id', productId)
-                .select()
-                .single();
-
-            if (error) {
-                console.error('Error updating cart item quantity:', error);
-                if (error.message && error.message.includes('row-level security policy')) {
-                    console.error('RLS violation details during PUT:', { userId: user.id, productId, quantity });
-                }
-                return res.status(500).json({ error: 'Failed to update cart item quantity.' });
-            }
-            return res.status(200).json({ message: 'Cart item quantity updated successfully!', cartItem: data });
-        }
+        if (error) return res.status(500).json({ error: 'Failed to update item quantity.' });
+        res.status(200).json({ message: 'Quantity updated!', item: data });
     });
 
-    router.delete('/:productId', isAuthenticated, async (req, res) => {
-        const { user, supabase: requestSupabase } = req;
-        const productId = parseInt(req.params.productId, 10);
+    // DELETE /api/cart/:itemId - Removes an item
+    router.delete('/:itemId', isAuthenticated, async (req, res) => {
+        const { supabase: requestSupabase } = req;
+        const { itemId } = req.params;
 
-        if (isNaN(productId)) {
-            return res.status(400).json({ error: 'Product ID is required.' });
-        }
+        const isRealProduct = !isNaN(parseInt(itemId));
+        const id = isRealProduct ? parseInt(itemId) : itemId;
 
         const { error } = await requestSupabase
             .from('cart_items')
             .delete()
-            .eq('user_id', user.id)
-            .eq('product_id', productId);
+            .eq(isRealProduct ? 'product_id' : 'virtual_item_id', id);
 
-        if (error) {
-            console.error('Error deleting cart item:', error);
-            if (error.message && error.message.includes('row-level security policy')) {
-                console.error('RLS violation details during DELETE (single):', { userId: user.id, productId });
-            }
-            return res.status(500).json({ error: 'Failed to remove cart item.' });
-        }
-
-        res.status(200).json({ message: 'Cart item removed successfully.' });
+        if (error) return res.status(500).json({ error: 'Failed to remove item.' });
+        res.status(200).json({ message: 'Item removed successfully.' });
     });
 
+    // DELETE /api/cart - Clears the entire cart for the user
     router.delete('/', isAuthenticated, async (req, res) => {
-        const { user, supabase: requestSupabase } = req;
-
-        const { error } = await requestSupabase
-            .from('cart_items')
-            .delete()
-            .eq('user_id', user.id);
-
-        if (error) {
-            console.error('Error clearing cart:', error);
-            if (error.message && error.message.includes('row-level security policy')) {
-                console.error('RLS violation details during DELETE (all):', { userId: user.id });
-            }
-            return res.status(500).json({ error: 'Failed to clear cart.' });
-        }
-
+        const { supabase: requestSupabase } = req;
+        const { error } = await requestSupabase.from('cart_items').delete().match({ user_id: req.user.id });
+        if (error) return res.status(500).json({ error: 'Failed to clear cart.' });
         res.status(200).json({ message: 'Cart cleared successfully.' });
     });
 
