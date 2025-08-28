@@ -19,25 +19,20 @@ const cart = (() => {
             _currentUser = user;
 
             if (_currentUser) {
-                // User is logged in. Sync any items from their previous logged-out session.
-                const localItems = JSON.parse(localStorage.getItem(LS_STORAGE_KEY) || '[]');
-                
-                // THE FIX: Immediately clear local storage to prevent it from being read again during refresh.
-                // The `localItems` variable now holds the state we need to sync.
-                localStorage.removeItem(LS_STORAGE_KEY);
-
-                if (localItems.length > 0) {
+                // User is logged in. Sync the entire local cart with the backend.
+                const localCart = JSON.parse(localStorage.getItem(LS_STORAGE_KEY) || '[]');
+                if (localCart.length > 0) {
                     const headers = await _getAuthHeaders();
                     if (headers) {
-                        for (const item of localItems) {
-                            // The API handles both real and virtual items with a single POST
-                            await fetch('/api/cart', {
-                                method: 'POST',
-                                headers,
-                                body: JSON.stringify({ item })
-                            });
-                        }
+                        // THE FIX: Use the new smart sync endpoint
+                        await fetch('/api/cart/sync', {
+                            method: 'POST',
+                            headers,
+                            body: JSON.stringify({ localCart })
+                        });
                     }
+                    // Clear local storage after sync is requested.
+                    localStorage.removeItem(LS_STORAGE_KEY);
                 }
             }
         },
@@ -68,6 +63,7 @@ const cart = (() => {
             if (_currentUser) {
                 const headers = await _getAuthHeaders();
                 if (!headers) return;
+                // Use the simple POST endpoint for single-item additions
                 await fetch('/api/cart', {
                     method: 'POST',
                     headers,

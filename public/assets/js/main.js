@@ -40,11 +40,13 @@ function hideModal() {
 }
 
 async function performLogout() {
-  cart.handleLogout(); // <-- THE CRITICAL FIX: Prepare cart for logout state
+  cart.handleLogout();
   await fetch("/api/auth/logout", { method: "POST" });
   const { error } = await supabase.auth.signOut();
   if (error) console.error("Error during client-side logout:", error);
   sessionStorage.setItem('toastMessage', 'Logged out successfully.');
+  // THE FIX for LOGOUT: Force a reload to ensure a clean, logged-out state.
+  window.location.reload();
 }
 
 async function initializeSupabase() {
@@ -302,12 +304,8 @@ async function updateAuthUI(session) {
         }
     }
     
-    // THE FIX: Enforce a strict, sequential flow to prevent race conditions.
-    // 1. Initialize the cart with the new user state (this syncs localStorage).
     await cart.init(supabase, user);
-    // 2. AFTER init/sync is done, refresh the internal cart state from the single source of truth.
     await cart.refresh();
-    // 3. ONLY THEN, update the UI with the final, correct state.
     updateCartUI();
 }
 
@@ -422,13 +420,14 @@ document.addEventListener("DOMContentLoaded", async () => {
                 image: target.dataset.productImage,
             };
             await cart.addItem(product);
+            // THE FIX for TOASTS: Show toast after adding item.
+            showToast(`${product.name} added to cart!`);
         }
         
         const cartItemElement = target.closest(".cart-item");
         if (cartItemElement) {
             cartActionTaken = true;
             const productIdStr = cartItemElement.dataset.productId;
-            // Determine if ID is numeric or string (for packages/builds)
             const productId = isNaN(parseInt(productIdStr)) ? productIdStr : parseInt(productIdStr);
             const currentQuantity = parseInt(cartItemElement.querySelector('input[type="number"]').value, 10);
 
@@ -456,17 +455,19 @@ document.addEventListener("DOMContentLoaded", async () => {
                     image: selectedPackage.image_url,
                 };
                 await cart.addItem(packageAsCartItem);
+                showToast(`${packageAsCartItem.name} added to cart!`); // Also show toast for packages
                 hideModal();
                 toggleCartPanel();
             }
         }
         
-        // If any cart action was taken, refresh state from server and re-render UI
         if (cartActionTaken) {
             await cart.refresh();
             updateCartUI();
         }
     });
+
+    // ... (The rest of your main.js file remains the same) ...
 
     // --- Search Forms ---
     document.getElementById("header-search-form")?.addEventListener("submit", (e) => {
