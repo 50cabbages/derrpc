@@ -37,6 +37,7 @@
       <div id="header-placeholder"></div>
 
       <main>
+        <!-- HERO SECTION (Existing) -->
         <section class="hero">
           <div class="container">
             <h1>Build Your Dream Rig</h1>
@@ -44,8 +45,6 @@
               Unleash peak performance with our curated selection of high-end
               components, peripherals, and custom-built PCs.
             </p>
-
-            <!-- NEW HERO SEARCH BAR -->
             <form class="hero-search-form" id="hero-search-form">
               <input
                 type="search"
@@ -55,13 +54,46 @@
               />
               <button type="submit" class="btn btn-primary">Search</button>
             </form>
-            <!-- END OF NEW HERO SEARCH BAR -->
-
             <a href="products.html" class="btn btn-primary"
               >Shop All Products</a
             >
           </div>
         </section>
+
+        <!-- WHY CHOOSE US SECTION (New) -->
+        <section class="why-us-section" style="padding: 4rem 0">
+          <div class="container">
+            <h2 class="section-title">Why Choose DRE?</h2>
+            <div class="why-us-grid">
+              <div class="why-us-card">
+                <div class="icon">⚙️</div>
+                <h3>Expert Custom Builds</h3>
+                <p>
+                  PCs tailored to your exact needs, from gaming to professional
+                  workloads, assembled by experts.
+                </p>
+              </div>
+              <div class="why-us-card">
+                <div class="icon">📦</div>
+                <h3>Fast & Secure Shipping</h3>
+                <p>
+                  Get your components quickly and safely, with tracking on every
+                  order.
+                </p>
+              </div>
+              <div class="why-us-card">
+                <div class="icon">🤝</div>
+                <h3>Dedicated Support</h3>
+                <p>
+                  Our knowledgeable team is here to help you before, during, and
+                  after your purchase.
+                </p>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- CATEGORIES MARQUEE (Existing) -->
         <section class="home-categories">
           <div class="container">
             <h2 class="section-title">Shop by Category</h2>
@@ -71,6 +103,7 @@
           </div>
         </section>
 
+        <!-- FEATURED PRODUCTS (Existing) -->
         <section class="featured-products centered-grid-section">
           <div class="container">
             <h2 class="section-title">Featured Products</h2>
@@ -82,12 +115,79 @@
           </div>
         </section>
 
+        <!-- DEALS OF THE WEEK SECTION (New) -->
+        <section
+          class="featured-products centered-grid-section"
+          style="padding-top: 0"
+        >
+          <div class="container">
+            <h2 class="section-title">Deals of the Week</h2>
+            <div class="product-grid" id="deals-product-grid">
+              <div class="spinner-container">
+                <div class="spinner"></div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- PC BUILDER CTA (New) -->
+        <section class="cta-section">
+          <div class="container">
+            <div class="cta-content">
+              <h2>Not Sure Where to Start?</h2>
+              <p>
+                Use our simple PC Builder to configure your system. We'll guide
+                you through compatible parts to create the perfect rig for your
+                budget and needs.
+              </p>
+              <a href="/pc-builder.html" class="btn btn-primary btn-large"
+                >Launch PC Builder</a
+              >
+            </div>
+          </div>
+        </section>
+
+        <!-- BRANDS MARQUEE (Existing) -->
         <section class="home-brands">
           <div class="container">
             <h2 class="section-title">Featured Brands</h2>
             <div class="brand-grid" id="brand-grid">
               <div class="brand-logos" id="brand-logos-container">
                 <!-- Brand cards will be dynamically injected here by JS -->
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- TESTIMONIALS SECTION (New) -->
+        <section
+          class="testimonials"
+          style="padding: 5rem 0; background-color: var(--card-bg)"
+        >
+          <div class="container">
+            <h2 class="section-title">What Our Customers Say</h2>
+            <div class="testimonials-grid">
+              <div class="testimonial-card">
+                <p class="quote">
+                  "The team at DRE helped me pick the perfect parts for my first
+                  gaming PC. The build quality is fantastic and it runs like a
+                  dream!"
+                </p>
+                <p class="author">- Alex R.</p>
+              </div>
+              <div class="testimonial-card">
+                <p class="quote">
+                  "Ordered a new GPU and it arrived the next day. Excellent
+                  service and competitive prices. Highly recommend!"
+                </p>
+                <p class="author">- Maria S.</p>
+              </div>
+              <div class="testimonial-card">
+                <p class="quote">
+                  "The PC Builder tool is amazing. I was able to design my whole
+                  system and the compatibility checks gave me peace of mind."
+                </p>
+                <p class="author">- John D.</p>
               </div>
             </div>
           </div>

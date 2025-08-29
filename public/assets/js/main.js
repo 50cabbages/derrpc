@@ -624,35 +624,58 @@ document.addEventListener("DOMContentLoaded", async () => {
             });
     }
 
-    if (path.endsWith("/") || path.endsWith("/index.html")) {
-        const [productsData, categories, brands] = await Promise.all([ fetchProducts(1, 5), fetchCategories(), fetchBrands() ]);
-        displayProducts(document.getElementById('featured-product-grid'), productsData.products);
-        const categoryGrid = document.getElementById("category-grid");
-        if (categoryGrid) {
-            const categoryList = document.createElement("div");
-            categoryList.className = "category-list";
-            const generateCategoryHTML = (cat) =>
-                `<a href="products.html?category=${encodeURIComponent(
+if (path.endsWith("/") || path.endsWith("/index.html")) {
+    const [productsData, categories, brands] = await Promise.all([
+        fetchProducts(1, 5),
+        fetchCategories(),
+        fetchBrands(),
+    ]);
+
+    displayProducts(
+        document.getElementById("featured-product-grid"),
+        productsData.products
+    );
+
+    const dealsGrid = document.getElementById('deals-product-grid');
+    if (dealsGrid) {
+        try {
+            const dealsResponse = await fetch('/api/products/deals');
+            if (dealsResponse.ok) {
+                const dealsData = await dealsResponse.json();
+                displayProducts(dealsGrid, dealsData);
+            }
+        } catch (error) {
+            console.error("Failed to fetch deals:", error);
+            dealsGrid.innerHTML = `<p>Could not load deals at this time.</p>`;
+        }
+    }
+
+    const categoryGrid = document.getElementById("category-grid");
+    if (categoryGrid) {
+        const categoryList = document.createElement("div");
+        categoryList.className = "category-list";
+        const generateCategoryHTML = (cat) =>
+            `<a href="products.html?category=${encodeURIComponent(
                 cat.name
-                )}" class="category-card"><div class="icon-container"><img src="${
+            )}" class="category-card"><div class="icon-container"><img src="${
                 cat.image_url || ""
-                }" alt="${cat.name}"></div><h3>${cat.name}</h3></a>`;
-            const originalHTML = categories.map(generateCategoryHTML).join("");
-            categoryList.innerHTML = originalHTML + originalHTML;
-            categoryGrid.innerHTML = "";
-            categoryGrid.appendChild(categoryList);
-        }
-        const brandLogosContainer = document.getElementById(
-            "brand-logos-container"
-        );
-        if (brandLogosContainer) {
-            const generateBrandHTML = (brand) =>
-                `<a href="products.html?brand=${brand.id}" class="brand-card"><img src="${brand.logo_url}" alt="${brand.name}"></a>`;
-            const originalHTML = brands.map(generateBrandHTML).join("");
-            brandLogosContainer.innerHTML =
-                originalHTML + originalHTML + (brands.length < 8 ? originalHTML : "");
-        }
-    } else if (path.endsWith('/products.html')) {
+            }" alt="${cat.name}"></div><h3>${cat.name}</h3></a>`;
+        const originalHTML = categories.map(generateCategoryHTML).join("");
+        categoryList.innerHTML = originalHTML + originalHTML;
+        categoryGrid.innerHTML = "";
+        categoryGrid.appendChild(categoryList);
+    }
+    const brandLogosContainer = document.getElementById(
+        "brand-logos-container"
+    );
+    if (brandLogosContainer) {
+        const generateBrandHTML = (brand) =>
+            `<a href="products.html?brand=${brand.id}" class="brand-card"><img src="${brand.logo_url}" alt="${brand.name}"></a>`;
+        const originalHTML = brands.map(generateBrandHTML).join("");
+        brandLogosContainer.innerHTML =
+            originalHTML + originalHTML + (brands.length < 8 ? originalHTML : "");
+    }
+} else if (path.endsWith('/products.html')) {
         const productsGrid = document.getElementById('products-grid');
         const categoryFiltersContainer = document.getElementById('category-filters');
         const brandFilterSelect = document.getElementById('brand-filter');
@@ -789,142 +812,180 @@ document.addEventListener("DOMContentLoaded", async () => {
             }
         });
         window.addEventListener('popstate', fetchAndDisplayProducts);
-    } else if (path.endsWith('/product-detail.html')) {
-        const contentDiv = document.getElementById('product-detail-content');
-        const params = new URLSearchParams(window.location.search);
-        const productId = parseInt(params.get('id'));
-        if (!productId) {
-            contentDiv.innerHTML = '<h2>Product ID not found.</h2>';
-            return;
-        }
-        const { data: product, error } = await supabase
-            .from('products')
-            .select('*, brands(name)')
-            .eq('id', productId)
-            .single();
-        if (error || !product) {
-            contentDiv.innerHTML = '<h2>Product not found.</h2>';
-            return;
-        }
-        const relatedProductsGrid = document.getElementById('related-products-grid');
-        const relatedProductsTitle = document.getElementById('related-products-title');
-        if (product.category) {
-            relatedProductsTitle.textContent = `More in ${product.category}`;
-            const { data: relatedProducts, error: relatedError } = await supabase
-                .from('products')
-                .select('*, brands(name)')
-                .eq('category', product.category)
-                .neq('id', product.id)
-                .limit(3);
-            if (relatedProducts && relatedProducts.length > 0) {
-                displayProducts(relatedProductsGrid, relatedProducts);
-            } else {
-                document.querySelector('.related-products').style.display = 'none';
-            }
+    }  else if (path.endsWith('/product-detail.html')) {
+    const contentDiv = document.getElementById('product-detail-content');
+    const breadcrumbContainer = document.getElementById('breadcrumb-container'); // Get the new container
+    const params = new URLSearchParams(window.location.search);
+    const productId = parseInt(params.get('id'));
+
+    if (!productId) {
+        contentDiv.innerHTML = '<h2>Product ID not found.</h2>';
+        return;
+    }
+
+    const { data: product, error } = await supabase
+        .from('products')
+        .select('*, brands(*)')
+        .eq('id', productId)
+        .single();
+
+    if (error || !product) {
+        contentDiv.innerHTML = '<h2>Product not found.</h2>';
+        return;
+    }
+
+    // --- NEW: Breadcrumb Generation ---
+    if (breadcrumbContainer && product.category) {
+        breadcrumbContainer.innerHTML = `
+            <nav class="breadcrumbs">
+                <a href="/">Home</a>
+                <span class="separator">&gt;</span>
+                <a href="/products.html?category=${encodeURIComponent(product.category)}">${product.category}</a>
+                <span class="separator">&gt;</span>
+                <span class="current-page">${product.name}</span>
+            </nav>
+        `;
+    }
+
+    // --- Related Products Logic (no changes needed here) ---
+    const relatedProductsGrid = document.getElementById('related-products-grid');
+    const relatedProductsTitle = document.getElementById('related-products-title');
+    if (product.category) {
+        relatedProductsTitle.textContent = `More in ${product.category}`;
+        const { data: relatedProducts } = await supabase
+            .from('products').select('*, brands(name)').eq('category', product.category)
+            .neq('id', product.id).limit(4);
+        if (relatedProducts && relatedProducts.length > 0) {
+            displayProducts(relatedProductsGrid, relatedProducts);
+            document.querySelector('.related-products').style.display = 'block';
         } else {
             document.querySelector('.related-products').style.display = 'none';
         }
-        document.title = `${product.name} - DRE Computer Center`;
-        const images = [product.image, product.image_2, product.image_3, product.image_4].filter(Boolean);
-        const displayPrice = product.sale_price || product.price;
-        const isInStock = product.stock > 0;
-        const originalPriceHTML = product.sale_price ? `<span class="original-price">${new Intl.NumberFormat('en-PH', { style: 'currency', currency: 'PHP' }).format(product.price)}</span>` : '';
-        const stockStatusHTML = isInStock ? `<div class="stock-status in-stock">In Stock</div>` : `<div class="stock-status out-of-stock">Out of Stock</div>`;
-        const actionsHTML = isInStock ? `
-            <div class="quantity-selector">
-                <button class="quantity-minus">-</button>
-                <input type="number" value="1" min="1" readonly>
-                <button class="quantity-plus">+</button>
-            </div>
-            <button class="btn btn-primary add-to-cart-btn" style="flex-grow: 1;"
-                data-product-id="${product.id}"
-                data-product-name="${product.name}"
-                data-product-price="${displayPrice}"
-                data-product-image="${product.image || ''}">
-                Add to Cart
-            </button>
-        ` : `<button class="btn btn-primary" disabled style="opacity: 0.5; cursor: not-allowed; width: 100%;">Out of Stock</button>`;
-        contentDiv.innerHTML = `
-            <div class="product-detail-page">
-                <div class="product-gallery">
-                    <div class="main-image-container">
-                        <img id="main-product-image" src="${images[0] || 'https://via.placeholder.com/600x400.png?text=No+Image'}" alt="${product.name}">
-                    </div>
-                    <div class="product-thumbnails">
-                        ${images.map((img, index) => `
-                            <div class="thumb-container ${index === 0 ? 'active' : ''}" data-image-src="${img}">
-                                <img src="${img}" alt="Thumbnail ${index + 1}">
-                            </div>
-                        `).join('')}
-                    </div>
+    } else {
+        document.querySelector('.related-products').style.display = 'none';
+    }
+
+    document.title = `${product.name} - DRE Computer Center`;
+    const images = [product.image, product.image_2, product.image_3, product.image_4].filter(Boolean);
+    const displayPrice = product.sale_price && product.sale_price > 0 ? product.sale_price : product.price;
+    const isInStock = product.stock > 0;
+
+    const originalPriceHTML = product.sale_price && product.sale_price > 0 ? `<span class="original-price">${new Intl.NumberFormat('en-PH', { style: 'currency', currency: 'PHP' }).format(product.price)}</span>` : '';
+    const stockStatusHTML = isInStock ? `<div class="stock-status in-stock">✓ In Stock (${product.stock} available)</div>` : `<div class="stock-status out-of-stock">Out of Stock</div>`;
+    
+    const actionsHTML = isInStock ? `
+        <div class="quantity-selector">
+            <button class="quantity-minus" aria-label="Decrease quantity">-</button>
+            <input type="number" value="1" min="1" readonly>
+            <button class="quantity-plus" aria-label="Increase quantity">+</button>
+        </div>
+        <button class="btn btn-primary add-to-cart-btn" style="flex-grow: 1;"
+            data-product-id="${product.id}"
+            data-product-name="${product.name}"
+            data-product-price="${displayPrice}"
+            data-product-image="${product.image || ''}">
+            Add to Cart
+        </button>
+    ` : `<button class="btn btn-primary" disabled style="opacity: 0.5; cursor: not-allowed; width: 100%;">Out of Stock</button>`;
+    
+    // --- NEW: Secondary Action Buttons HTML ---
+const secondaryActionsHTML = `
+    <div class="secondary-actions">
+        <a href="/products.html?category=${encodeURIComponent(product.category)}" 
+           onclick="event.preventDefault(); history.back();" 
+           class="btn btn-outline btn-secondary-action">← Check More Products</a>
+        <a href="/packages.html" class="btn btn-outline btn-secondary-action">View PC Packages →</a>
+    </div>
+`;
+
+    const specificationsHTML = product.specifications ? 
+        Object.entries(product.specifications).map(([key, value]) => `<tr><td>${key}</td><td>${value}</td></tr>`).join('') : 
+        '<tr><td colspan="2">No specifications available.</td></tr>';
+
+    contentDiv.innerHTML = `
+        <div class="product-detail-page">
+            <div class="product-gallery">
+                <div class="main-image-container">
+                    <img id="main-product-image" src="${images[0] || 'https://via.placeholder.com/600x400.png?text=No+Image'}" alt="${product.name}">
                 </div>
-                <div class="product-info">
-                    ${product.brands && product.brands.logo_url ? `<div class="product-brand"><img src="${product.brands.logo_url}" alt="${product.brands.name}"></div>` : ''}
-                    <h1 class="product-info-title">${product.name}</h1>
-                    ${stockStatusHTML}
-                    <div class="price-box">
-                        ${originalPriceHTML}
-                        <span class="sale-price">${new Intl.NumberFormat('en-PH', { style: 'currency', currency: 'PHP' }).format(displayPrice)}</span>
-                    </div>
-                    <div class="product-actions">
-                        ${actionsHTML}
-                    </div>
-                </div>
-                <div class="product-specs-section">
-                    <nav class="tabs-nav">
-                        <span class="tab-link active" data-tab="description">Description</span>
-                        <span class="tab-link" data-tab="specification">Specification</span>
-                    </nav>
-                    <div id="description" class="tab-content active"><p>${product.description || 'No description available.'}</p></div>
-                    <div id="specification" class="tab-content">
-                        <table class="spec-table"><tbody>
-                            ${product.specifications ? Object.entries(product.specifications).map(([key, value]) => `<tr><td>${key}</td><td>${value}</td></tr>`).join('') : '<tr><td colspan="2">No specifications available.</td></tr>'}
-                        </tbody></table>
-                    </div>
+                <div class="product-thumbnails">
+                    ${images.map((img, index) => `
+                        <div class="thumb-container ${index === 0 ? 'active' : ''}" data-image-src="${img}">
+                            <img src="${img}" alt="Thumbnail ${index + 1}">
+                        </div>
+                    `).join('')}
                 </div>
             </div>
-        `;
-        const mainImage = document.getElementById('main-product-image');
-        document.querySelectorAll('.thumb-container').forEach(thumb => {
-            thumb.addEventListener('click', () => {
-                mainImage.src = thumb.dataset.imageSrc;
-                document.querySelectorAll('.thumb-container').forEach(t => t.classList.remove('active'));
-                thumb.classList.add('active');
+            <div class="product-info">
+                ${product.brands && product.brands.logo_url ? `<div class="product-brand"><img src="${product.brands.logo_url}" alt="${product.brands.name}"></div>` : ''}
+                <h1 class="product-info-title">${product.name}</h1>
+                ${stockStatusHTML}
+                <div class="price-box">
+                    ${originalPriceHTML}
+                    <span class="sale-price">${new Intl.NumberFormat('en-PH', { style: 'currency', currency: 'PHP' }).format(displayPrice)}</span>
+                </div>
+                <div class="product-actions">
+                    ${actionsHTML}
+                </div>
+                ${secondaryActionsHTML} 
+            </div>
+            <div class="product-specs-section">
+                <nav class="tabs-nav">
+                    <span class="tab-link active" data-tab="description">Description</span>
+                    <span class="tab-link" data-tab="specification">Specification</span>
+                </nav>
+                <div id="description" class="tab-content active">
+                    <p>${product.description ? product.description.replace(/\n/g, '<br>') : 'No description available.'}</p>
+                </div>
+                <div id="specification" class="tab-content">
+                    <table class="spec-table"><tbody>${specificationsHTML}</tbody></table>
+                </div>
+            </div>
+        </div>
+    `;
+
+    // Re-attach event listeners (same as before, no changes needed here)
+    const mainImage = document.getElementById('main-product-image');
+    document.querySelectorAll('.thumb-container').forEach(thumb => {
+        thumb.addEventListener('click', () => {
+            mainImage.src = thumb.dataset.imageSrc;
+            document.querySelectorAll('.thumb-container').forEach(t => t.classList.remove('active'));
+            thumb.classList.add('active');
+        });
+    });
+    document.querySelectorAll('.tab-link').forEach(link => {
+        link.addEventListener('click', () => {
+            const tabId = link.dataset.tab;
+            document.querySelectorAll('.tab-link').forEach(l => l.classList.remove('active'));
+            link.classList.add('active');
+            document.querySelectorAll('.tab-content').forEach(content => {
+                content.classList.toggle('active', content.id === tabId);
             });
         });
-        document.querySelectorAll('.tab-link').forEach(link => {
-            link.addEventListener('click', () => {
-                const tabId = link.dataset.tab;
-                document.querySelectorAll('.tab-link').forEach(l => l.classList.remove('active'));
-                link.classList.add('active');
-                document.querySelectorAll('.tab-content').forEach(content => {
-                    content.classList.toggle('active', content.id === tabId);
-                });
-            });
-        });
-        const quantityInput = contentDiv.querySelector('.quantity-selector input');
-        contentDiv.querySelector('.quantity-minus')?.addEventListener('click', async () => {
-            let currentVal = parseInt(quantityInput.value);
-            if (currentVal > 1) {
-                const newQuantity = currentVal - 1;
-                quantityInput.value = newQuantity;
-                await cart.updateItemQuantity(productId, newQuantity); 
-                await cart.refresh();
-                updateCartUI();
-            }
-        });
-        contentDiv.querySelector('.quantity-plus')?.addEventListener('click', async () => {
-            const productToAddToCart = {
-                id: productId, 
-                name: product.name,
-                price: product.sale_price || product.price,
-                image: product.image || '',
-            };
-            await cart.addItem(productToAddToCart, 1);
-            await cart.refresh();
-            updateCartUI();
-        });
-    } else if (path.endsWith("/profile.html")) {
+    });
+    const quantityInput = contentDiv.querySelector('.quantity-selector input');
+    const addToCartBtn = contentDiv.querySelector('.add-to-cart-btn');
+    contentDiv.querySelector('.quantity-minus')?.addEventListener('click', () => {
+        let currentVal = parseInt(quantityInput.value);
+        if (currentVal > 1) { quantityInput.value = currentVal - 1; }
+    });
+    contentDiv.querySelector('.quantity-plus')?.addEventListener('click', () => {
+        quantityInput.value = parseInt(quantityInput.value) + 1;
+    });
+    addToCartBtn?.addEventListener('click', async () => {
+        const quantityToAdd = parseInt(quantityInput.value);
+        const productData = {
+            id: parseInt(addToCartBtn.dataset.productId),
+            name: addToCartBtn.dataset.productName,
+            price: parseFloat(addToCartBtn.dataset.productPrice),
+            image: addToCartBtn.dataset.productImage,
+        };
+        await cart.addItem(productData, quantityToAdd);
+        showToast(`${productData.name} (x${quantityToAdd}) added to cart!`);
+        await cart.refresh();
+        updateCartUI();
+    });
+} else if (path.endsWith("/profile.html")) {
         const form = document.getElementById("profile-form");
         const feedbackEl = document.getElementById("form-feedback");
         const editBtn = document.getElementById("edit-btn");

@@ -22,7 +22,7 @@
     flex-shrink: 0;
     gap: 1.5rem;
     animation: marquee-ltr 40s linear infinite;
-    padding: 1rem;
+    padding: 2rem;
 }
 
 .category-grid:hover .category-list {
@@ -83,7 +83,7 @@
     min-width: 100%;
     gap: 4rem;
     animation: marquee-rtl 30s linear infinite;
-    padding: 1rem;
+    padding: 2rem;
 }
 
 .brand-grid:hover .brand-logos {

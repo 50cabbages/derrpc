@@ -246,6 +246,8 @@ input[type=number]::-webkit-outer-spin-button {
     grid-template-columns: 1fr 1.2fr;
     gap: 3rem;
     align-items: flex-start;
+    padding: 1rem
+    ;
 }
 
 .product-gallery .main-image-container {
@@ -462,6 +464,129 @@ input[type=number]::-webkit-outer-spin-button {
     color: var(--text-secondary);
 }
 
+.why-us-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 2rem;
+    margin-top: 3rem;
+}
+.why-us-card {
+    background-color: var(--card-bg);
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    padding: 2rem;
+    text-align: center;
+    transition: transform 0.3s ease, border-color 0.3s ease;
+}
+.why-us-card:hover {
+    transform: translateY(-5px);
+    border-color: var(--primary-blue);
+}
+.why-us-card .icon {
+    font-size: 3rem;
+    margin-bottom: 1rem;
+}
+.why-us-card h3 {
+    margin-bottom: 0.5rem;
+}
+.why-us-card p {
+    color: var(--text-secondary);
+    line-height: 1.6;
+}
+
+/* --- PC Builder CTA Section --- */
+.cta-section {
+    padding: 6rem 0;
+    margin: 4rem 0;
+    background: linear-gradient(rgba(10, 15, 24, 0.85), rgba(10, 15, 24, 0.85)), 
+                url('https://www.bapcs.co.uk/wp-content/uploads/2012/03/computer-repair-london-2.jpg') no-repeat center center/cover;
+    text-align: center;
+}
+.cta-content h2 {
+    font-size: 2.5rem;
+    margin-bottom: 1rem;
+}
+.cta-content p {
+    font-size: 1.1rem;
+    color: var(--text-secondary);
+    max-width: 600px;
+    margin: 0 auto 2rem auto;
+}
+.btn-large {
+    padding: 16px 36px;
+    font-size: 1.2rem;
+}
+
+/* --- Testimonials Section --- */
+.testimonials-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 2rem;
+}
+.testimonial-card {
+    background-color: var(--dark-bg);
+    padding: 2rem;
+    border-radius: 12px;
+    border-left: 4px solid var(--primary-blue);
+}
+.testimonial-card .quote {
+    font-style: italic;
+    color: var(--text-secondary);
+    margin-bottom: 1rem;
+    line-height: 1.7;
+}
+.testimonial-card .author {
+    font-weight: 600;
+    color: var(--text-primary);
+    text-align: right;
+}
+
+#breadcrumb-container {
+    padding-top: 1.5rem;
+    padding-bottom: 1.5rem;
+    border-bottom: 1px solid var(--border-color);
+}
+.breadcrumbs {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.9rem;
+}
+.breadcrumbs a {
+    color: var(--text-secondary);
+}
+.breadcrumbs a:hover {
+    color: var(--primary-blue);
+}
+.breadcrumbs .separator {
+    color: var(--text-secondary);
+}
+.breadcrumbs .current-page {
+    color: var(--text-primary);
+    font-weight: 500;
+}
+
+/* --- Secondary Action Buttons Styling --- */
+.secondary-actions {
+    margin-top: 1.5rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid var(--border-color);
+    display: flex;
+    gap: 1rem;
+    justify-content: space-between;
+}
+.btn-secondary-action {
+    flex-grow: 1;
+    text-align: center;
+}
+
+/* Responsive adjustment for secondary buttons */
+@media (max-width: 768px) {
+    .secondary-actions {
+        flex-direction: column;
+    }
+}
+
 @media (max-width: 992px) {
     #packages-container .product-grid {
         grid-template-columns: repeat(2, 1fr);
@@ -521,3 +646,8 @@ input[type=number]::-webkit-outer-spin-button {
 
 }
 
+
+
+main .container:has(#product-detail-content) {
+    max-width: 1200px;
+}

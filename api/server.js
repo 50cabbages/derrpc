@@ -53,6 +53,22 @@ app.get('/api/config', (req, res) => {
     });
 });
 
+app.get('/api/products/deals', async (req, res) => {
+    const { data, error } = await supabase
+        .from('products')
+        .select('*')
+        .not('sale_price', 'is', null) // Ensures sale_price exists
+        .gt('sale_price', 0)             // Ensures sale_price is a valid price
+        .gt('stock', 0)                  // Ensures the item is in stock
+        .limit(5);                       // Limit to 4 deals for the homepage
+            
+    if (error) {
+        console.error("Error fetching deals:", error);
+        return res.status(500).json({ error: error.message });
+    }
+    res.json(data);
+});
+
 app.get('/api/products', async (req, res) => {
     const page = parseInt(req.query.page, 10) || 1;
     const limit = parseInt(req.query.limit, 10) || 10;
@@ -165,6 +181,8 @@ app.get('/api/products/:id', async (req, res) => {
     }
     res.json(data);
 });
+
+
 
 app.get('*', (req, res) => {
     res.sendFile(path.join(__dirname, '../public/index.html'));
